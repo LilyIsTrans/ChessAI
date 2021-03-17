@@ -30,9 +30,14 @@ namespace ChessAI
         {
             this.InitializeComponent();
         }
-
+        // The actual renderer (currently Win2D)
         private void canvas_Draw(Microsoft.Graphics.Canvas.UI.Xaml.CanvasControl sender, Microsoft.Graphics.Canvas.UI.Xaml.CanvasDrawEventArgs args) {
             args.DrawingSession.DrawText("Hello, World!", 100, 100, Colors.White);
+        }
+
+        private void Page_Unloaded(object sender, RoutedEventArgs e) {
+            this.canvas.RemoveFromVisualTree();
+            this.canvas = null;
         }
     }
 }
