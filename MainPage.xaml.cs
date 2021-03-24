@@ -48,11 +48,16 @@ namespace ChessAI
         }
         // The actual renderer (currently Win2D)
         private void canvas_Draw(Microsoft.Graphics.Canvas.UI.Xaml.CanvasControl sender, Microsoft.Graphics.Canvas.UI.Xaml.CanvasDrawEventArgs args) {
+
             //args.DrawingSession.DrawRectangle(0, 0, 100, 100, Color.FromArgb(100, 117, 52, 17));
             Size BoardSize;
             BoardSize.Width = 1800;
             BoardSize.Height = 1800;
             args.DrawingSession.DrawSvg(Board, sender.Size);
+
+            args.DrawingSession.DrawText("Yeet!", 100, 100, Colors.White);
+            args.DrawingSession.DrawRectangle(0,0,)
+
         }
 
         private void Page_Unloaded(object sender, RoutedEventArgs e) {
