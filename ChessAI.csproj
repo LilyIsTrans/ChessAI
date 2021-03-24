@@ -119,7 +119,7 @@
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Gamestate.cs" />
+    <Compile Include="Game.cs" />
     <Compile Include="MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>
@@ -131,6 +131,20 @@
     </AppxManifest>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Assets\BishopBlack.svg" />
+    <Content Include="Assets\BishopWhite.svg" />
+    <Content Include="Assets\Chess Board.svg" />
+    <Content Include="Assets\KingBlack.svg" />
+    <Content Include="Assets\KingWhite.svg" />
+    <Content Include="Assets\KnightBlack.svg" />
+    <Content Include="Assets\KnightWhite.svg" />
+    <Content Include="Assets\PawnBlack.svg" />
+    <Content Include="Assets\PawnWhite.svg" />
+    <Content Include="Assets\PieceTemplate.svg" />
+    <Content Include="Assets\QueenBlack.svg" />
+    <Content Include="Assets\QueenWhite.svg" />
+    <Content Include="Assets\RookBlack.svg" />
+    <Content Include="Assets\RookWhite.svg" />
     <Content Include="Properties\Default.rd.xml" />
     <Content Include="Assets\LockScreenLogo.scale-200.png" />
     <Content Include="Assets\SplashScreen.scale-200.png" />
