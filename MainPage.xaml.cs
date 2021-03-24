@@ -17,6 +17,7 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 using Microsoft.Graphics.Canvas.Svg;
+using Microsoft.Graphics.Canvas.UI.Xaml;
 
 
 // The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
@@ -48,15 +49,7 @@ namespace ChessAI
         }
         // The actual renderer (currently Win2D)
         private void canvas_Draw(Microsoft.Graphics.Canvas.UI.Xaml.CanvasControl sender, Microsoft.Graphics.Canvas.UI.Xaml.CanvasDrawEventArgs args) {
-
-            //args.DrawingSession.DrawRectangle(0, 0, 100, 100, Color.FromArgb(100, 117, 52, 17));
-            Size BoardSize;
-            BoardSize.Width = 1800;
-            BoardSize.Height = 1800;
             args.DrawingSession.DrawSvg(Board, sender.Size);
-
-            args.DrawingSession.DrawText("Yeet!", 100, 100, Colors.White);
-            args.DrawingSession.DrawRectangle(0,0,)
 
         }
 
@@ -66,8 +59,25 @@ namespace ChessAI
         }
 
         private void canvas_CreateResources(Microsoft.Graphics.Canvas.UI.Xaml.CanvasControl sender, Microsoft.Graphics.Canvas.UI.CanvasCreateResourcesEventArgs args) {
-            var file = File.ReadAllText("Assets/Chess Board.svg");
-            Board = CanvasSvgDocument.LoadFromXml(sender, file);
+            Board = LoadAsset(sender, "Chess Board");
+            PawnBlack = LoadAsset(sender, "PawnBlack");
+            PawnWhite = LoadAsset(sender, "PawnWhite");
+            KnightBlack = LoadAsset(sender, "KnightBlack");
+            KnightWhite = LoadAsset(sender, "KnightWhite");
+            BishopBlack = LoadAsset(sender, "BishopBlack");
+            BishopWhite = LoadAsset(sender, "BishopWhite");
+            RookBlack = LoadAsset(sender, "RookBlack");
+            RookWhite = LoadAsset(sender, "RookWhite");
+            QueenBlack = LoadAsset(sender, "QueenBlack");
+            QueenWhite = LoadAsset(sender, "QueenWhite");
+            KingBlack = LoadAsset(sender, "KingBlack");
+            KingWhite = LoadAsset(sender, "KingWhite");
+
+        }
+
+        private CanvasSvgDocument LoadAsset(CanvasControl sender, string fileName) {
+            var file = File.ReadAllText($"Assets/{fileName}.svg");
+            return CanvasSvgDocument.LoadFromXml(sender, file);
         }
     }
 }
