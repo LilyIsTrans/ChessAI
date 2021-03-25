@@ -53,7 +53,12 @@ namespace ChessAI
         public MainPage() //This is auto-generated boilerplate code that interacts with Win2D (the graphics API I'm using). All it does is tell Win2D the window should exist.
         {
             this.InitializeComponent();
+            
+            
+            
         }
+
+        
         
         private void canvas_Draw(Microsoft.Graphics.Canvas.UI.Xaml.CanvasControl sender, Microsoft.Graphics.Canvas.UI.Xaml.CanvasDrawEventArgs args) //This is where I put the code that actually draws anything on screen.
         {
@@ -100,6 +105,10 @@ namespace ChessAI
         {
             var file = File.ReadAllText($"Assets/{fileName}.svg"); //File.ReadAllText simply reads the whole file as a string, the $ strings work exactly like python f-strings, and Assets/ is the path where the assets are kept
             return CanvasSvgDocument.LoadFromXml(sender, file); //CanvasSvgDocument.LoadFromXml takes in a string which is a valid Svg file and loads it into whatever form Win2D needs
+        }
+
+        private void canvas_Click(Microsoft.Graphics.Canvas.UI.Xaml.CanvasControl sender, Microsoft.Graphics.Canvas. args) {
+
         }
     }
 }
