@@ -107,8 +107,6 @@ namespace ChessAI
             return CanvasSvgDocument.LoadFromXml(sender, file); //CanvasSvgDocument.LoadFromXml takes in a string which is a valid Svg file and loads it into whatever form Win2D needs
         }
 
-        private void canvas_Click(Microsoft.Graphics.Canvas.UI.Xaml.CanvasControl sender, Microsoft.Graphics.Canvas. args) {
-
-        }
+        
     }
 }
