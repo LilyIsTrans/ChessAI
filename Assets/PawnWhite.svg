@@ -6,8 +6,6 @@
    xmlns="http://www.w3.org/2000/svg"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="225"
-   height="225"
    viewBox="0 0 59.531249 59.531252"
    version="1.1"
    id="svg414"
@@ -33,7 +31,7 @@
          style="fill:#ffffff;fill-opacity:1"
          d="M 11.584951,21.67234 H 46.627997 V 56.715386 H 11.584951 Z" />
       <rect
-         style="fill:#000000;fill-opacity:1;stroke:#000000;stroke-width:0.358884;stroke-opacity:1"
+         style="fill:#000000;fill-opacity:1;stroke:#000000;stroke-width:1;stroke-opacity:1"
          id="rect1335"
          width="44.732449"
          height="14.099051"
@@ -97,13 +95,13 @@
      inkscape:groupmode="layer"
      id="layer1">
     <circle
-       style="fill:#000000;fill-opacity:0;stroke:#000000;stroke-width:0.358884;stroke-opacity:1"
+       style="fill:#000000;fill-opacity:0;stroke:#000000;stroke-width:1;stroke-opacity:1"
        id="path1247"
        cx="28.914215"
        cy="10.162635"
        r="3.9733689" />
     <circle
-       style="fill:#000000;fill-opacity:0;stroke:#000000;stroke-width:0.358884;stroke-opacity:1"
+       style="fill:#000000;fill-opacity:0;stroke:#000000;stroke-width:1;stroke-opacity:1"
        id="path1243"
        mask="url(#mask-powermask-path-effect1337)"
        inkscape:path-effect="#path-effect1337"
@@ -116,33 +114,38 @@
     <g
        id="g1367">
       <circle
-         style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.358884;stroke-opacity:0"
+         style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:1;stroke-opacity:0"
          id="path1245-1"
          cx="28.978439"
          cy="20.736441"
          r="8.138998" />
       <circle
-         style="fill:#000000;fill-opacity:0;stroke:#000000;stroke-width:0.358884;stroke-opacity:1"
+         style="fill:#000000;fill-opacity:0;stroke:#000000;stroke-width:1;stroke-opacity:1"
          id="path1245"
          cx="28.9783"
          cy="20.736919"
          r="8.138998" />
     </g>
     <circle
-       style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.358884;stroke-opacity:0"
+       style="fill:#ffffff;fill-opacity:0;stroke:#000000;stroke-width:1;stroke-opacity:0"
        id="path1243-9"
        r="16.342081"
        cy="39.283524"
        cx="29.106524" />
     <path
-       style="fill:none;stroke:#000000;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       style="fill:none;stroke:none;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
        d="M 12.895754,41.894498 H 45.369001"
        id="path1343" />
     <circle
-       style="fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:0.358884;stroke-opacity:1"
+       style="fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:1;stroke-opacity:1"
        id="path1247-7"
        cx="28.913811"
        cy="10.162811"
        r="3.9733689" />
+	  <path
+		 style="fill:#ffffff;stroke-width:3;stroke-opacity:1;fill-opacity:1;stroke:#000000"
+		 d="m 48.981867,157.09361 c -0.08431,-0.31251 -0.288801,-2.40512 -0.454418,-4.65023 -1.247544,-16.9118 5.225684,-34.46107 17.264289,-46.80441 4.206543,-4.31303 8.578677,-7.698768 13.770924,-10.664081 1.636192,-0.934439 3.14307,-1.797695 3.348613,-1.918348 0.315006,-0.184908 0.229557,-0.532929 -0.543927,-2.215365 -4.489342,-9.764928 -3.425725,-21.011595 2.82446,-29.865789 2.872227,-4.068879 7.870513,-8.102363 12.434599,-10.034391 l 2.192667,-0.928181 -1.458789,-1.59201 C 95.89397,45.729256 94.46546,42.137443 94.45049,38.590094 c -0.01796,-4.251819 1.37361,-7.551715 4.472768,-10.606602 2.253292,-2.221103 4.295612,-3.39339 7.038552,-4.040121 7.72649,-1.821751 15.71622,3.090744 17.7199,10.895103 0.49782,1.939022 0.50883,5.333744 0.0232,7.160884 -0.56297,2.118242 -1.97929,4.766624 -3.39801,6.353925 -1.34946,1.50981 -1.46963,1.725884 -0.96194,1.729614 0.17362,0.0013 1.56574,0.609167 3.09359,1.350867 13.98798,6.790498 20.5174,22.958699 15.10836,37.411418 -0.36388,0.972272 -0.87047,2.186018 -1.12576,2.697216 l -0.46415,0.929449 2.69445,1.445283 c 17.43551,9.3523 29.26654,25.94688 32.32044,45.3337 0.49588,3.14796 0.64977,13.45001 0.24956,16.70636 l -0.20951,1.70463 h -60.9384 -60.938409 l -0.153296,-0.56821 z"
+		 id="path854"
+		 transform="scale(0.26458333)" />
   </g>
 </svg>

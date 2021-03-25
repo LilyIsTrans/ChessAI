@@ -30,19 +30,25 @@ namespace ChessAI
     /// </summary>
     public sealed partial class MainPage : Page //A sealed class means nothing can inherit from this class, and partial means it can be defined in several parts over multiple files if I so choose.
     {
-        CanvasSvgDocument Board; //These are all declaring the variables that will hold the images for the pieces and the board as SVG's that I have drawn.
-        CanvasSvgDocument PawnBlack;
-        CanvasSvgDocument PawnWhite;
-        CanvasSvgDocument KnightBlack;
-        CanvasSvgDocument KnightWhite;
-        CanvasSvgDocument BishopBlack;
-        CanvasSvgDocument BishopWhite;
-        CanvasSvgDocument RookBlack;
-        CanvasSvgDocument RookWhite;
-        CanvasSvgDocument QueenBlack;
-        CanvasSvgDocument QueenWhite;
-        CanvasSvgDocument KingBlack;
-        CanvasSvgDocument KingWhite;
+        public CanvasSvgDocument Board; //These are all declaring the variables that will hold the images for the pieces and the board as SVG's that I have drawn.
+        public CanvasSvgDocument PawnBlack;
+        public CanvasSvgDocument PawnWhite;
+        public CanvasSvgDocument KnightBlack;
+        public CanvasSvgDocument KnightWhite;
+        public CanvasSvgDocument BishopBlack;
+        public CanvasSvgDocument BishopWhite;
+        public CanvasSvgDocument RookBlack;
+        public CanvasSvgDocument RookWhite;
+        public CanvasSvgDocument QueenBlack;
+        public CanvasSvgDocument QueenWhite;
+        public CanvasSvgDocument KingBlack;
+        public CanvasSvgDocument KingWhite;
+        
+        private Size pieceSize;
+
+        public static GameState game = new GameState();
+
+        private RenderTranslator translator;
 
         public MainPage() //This is auto-generated boilerplate code that interacts with Win2D (the graphics API I'm using). All it does is tell Win2D the window should exist.
         {
@@ -52,7 +58,13 @@ namespace ChessAI
         private void canvas_Draw(Microsoft.Graphics.Canvas.UI.Xaml.CanvasControl sender, Microsoft.Graphics.Canvas.UI.Xaml.CanvasDrawEventArgs args) //This is where I put the code that actually draws anything on screen.
         {
             // The actual renderer (currently Win2D)
+            
             args.DrawingSession.DrawSvg(Board, sender.Size); //It works a lot like processing actually, but it's in C# and hardware accelerated (it runs on the GPU not the CPU), which is ideal and why I chose it
+            
+            foreach (Tuple<Position, byte> piece in game.RenderInterface())
+            {
+                args.DrawingSession.DrawSvg(translator.map[piece.Item2], pieceSize, (float)(piece.Item1.Column * pieceSize.Width), (float)(piece.Item1.Row * pieceSize.Height));
+            }
 
         }
 
@@ -78,6 +90,9 @@ namespace ChessAI
             QueenWhite = LoadAsset(sender, "QueenWhite");
             KingBlack = LoadAsset(sender, "KingBlack");
             KingWhite = LoadAsset(sender, "KingWhite");
+
+            translator = new RenderTranslator(PawnBlack, PawnWhite, KnightBlack, KnightWhite, BishopBlack, BishopWhite, RookBlack, RookWhite, QueenBlack, QueenWhite, KingBlack, KingWhite);
+            pieceSize = new Size(sender.Size.Width / 16, sender.Size.Height / 16);
 
         }
 

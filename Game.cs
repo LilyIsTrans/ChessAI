@@ -101,7 +101,8 @@ namespace ChessAI
 
         public Position position; //Declare that there will be a Position type variable named position, but don't define it
         public bool white; //Declare a bool (boolean, true/false) to keep track of whether a given piece is white
-        public static int type; //Declare an integer named type. This will be set in each of the subclasses
+        public static byte type; //Declare an integer named type. This will be set in each of the subclasses
+
         public byte Row //Define a property named Row. Properties are declared like variables, but defined sort of like functions with get and set methods that tell the code how to find the value.
                         //It's basically saying that I want to be able to treat this like a variable when I use it elsewhere, but run some code to actually determine the value
         {
@@ -117,6 +118,14 @@ namespace ChessAI
             set
             {
                 if (value < 8) { position.Column = value; }
+            }
+        }
+
+        public byte RenderID 
+        { 
+            get
+            {
+                return (byte)(type + (16 * Convert.ToInt32(white)));
             }
         }
 
@@ -136,7 +145,7 @@ namespace ChessAI
 
     class Pawn : Piece //Each of the piece types will be its own class which inherits from the abstract Piece class but with its own implementation of some things for the differences between pieces
     {
-        new public static int type = Game.PAWN; 
+        new public static byte type = Game.PAWN; 
         //I'm using static variables to be able to use a name for the types of different pieces in various functions without needing to pass strings or class instances around, which is much less efficient and
         //easy in C# than in python. Instead, I've named some variables with integer values that are more efficient and easy to handle but they still have names so I don't need to remember them.
 
@@ -208,7 +217,7 @@ namespace ChessAI
 
     class Knight : Piece
     {
-        new public static int type = Game.KNIGHT; //Setting the type property of all knights to KNIGHT
+        new public static byte type = Game.KNIGHT; //Setting the type property of all knights to KNIGHT
         //I should explain what these keywords do:
         //new tells the compiler that I want to override the implementation of the same variable from the base class
         //public means the variable can be accessed by code from outside this class
@@ -229,7 +238,7 @@ namespace ChessAI
 
     class Bishop : Piece
     {
-        new public static int type = Game.BISHOP;
+        new public static byte type = Game.BISHOP;
 
         public Bishop(Position startPosition, bool isWhite)
         {
@@ -245,7 +254,7 @@ namespace ChessAI
 
     class Rook : Piece
     {
-        new public static int type = Game.ROOK;
+        new public static byte type = Game.ROOK;
         public bool canCastle; //Since the rook needs to keep track of whether or not it has moved on account of being involved in castling, it get a bool called canCastle for that purpose
         //Confusingly, overriding properties from the base class requires the new keyword or the compiler complains (though it does actually still work), but creating new properties does not
         //require the new keyword
@@ -265,7 +274,7 @@ namespace ChessAI
 
     class Queen : Piece
     {
-        new public static int type = Game.QUEEN;
+        new public static byte type = Game.QUEEN;
 
         public Queen(Position startPosition, bool isWhite)
         {
@@ -281,7 +290,7 @@ namespace ChessAI
 
     class King : Piece
     {
-        new public static int type = Game.KING;
+        new public static byte type = Game.KING;
         public bool canCastle; //The king also needs to keep track of its eligibility to castle
         //The king pieces do not directly worry about check and checkmate, that's the game state's job
 
