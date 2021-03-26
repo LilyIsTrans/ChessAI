@@ -96,12 +96,12 @@ namespace ChessAI
 
     }
 
-    abstract class Piece //Defining a class as abstract tells the program that I intend to use this class to define general properties that many subclasses will inherit, but will not actually instantiate any instances of the base class
+    public abstract class Piece : IEquatable<Piece> //Defining a class as abstract tells the program that I intend to use this class to define general properties that many subclasses will inherit, but will not actually instantiate any instances of the base class
     {
 
         public Position position; //Declare that there will be a Position type variable named position, but don't define it
         public bool white; //Declare a bool (boolean, true/false) to keep track of whether a given piece is white
-        public static byte type; //Declare an integer named type. This will be set in each of the subclasses
+        public abstract byte type { get; } //Declare an integer named type. This will be set in each of the subclasses
 
         public byte Row //Define a property named Row. Properties are declared like variables, but defined sort of like functions with get and set methods that tell the code how to find the value.
                         //It's basically saying that I want to be able to treat this like a variable when I use it elsewhere, but run some code to actually determine the value
@@ -125,27 +125,41 @@ namespace ChessAI
         { 
             get
             {
-                return (byte)(type + (16 * Convert.ToInt32(white)));
+                return (byte)(type + (8 * Convert.ToInt32(white)));
             }
         }
 
-        public abstract Position[] Moves(); //Define an abstract method named Moves(). An abstract method is a method declared in an abstract class but with no implementation, to indicate that all subclasses
+        public abstract List<Position> Moves(); //Define an abstract method named Moves(). An abstract method is a method declared in an abstract class but with no implementation, to indicate that all subclasses
                                             //must define an implementation of the method. In this case, Moves() generates the legal moves a piece can take, which must be defined for each piece but is also
                                             //different for each piece, so it is defined as an abstract method to indicate that I must define it for all pieces.
 
-        public virtual Position[] Threaten() //Define a virtual method named Threaten(). A virtual method is like an abstract method, but it has a default implementation which can be overridden by subclasses
+        public virtual List<Position> Threaten() //Define a virtual method named Threaten(). A virtual method is like an abstract method, but it has a default implementation which can be overridden by subclasses
                                              //but doesn't need to be. In this case, most pieces simply threaten all of the positions which are legal moves, but pawns function differently, so I define
                                              //a virtual method for Threaten which defines it as simply returning Moves() for most pieces, but allows me to override it in Pawn where it works differently.
         {
-            return Moves();
+            List<Position> output = new List<Position>();
+            foreach (Position move in Moves()) {
+                output.Append(move);
+            }
+            return output;
         }
 
+        public virtual bool Equals(Piece other) {
+            return (position == other.position) &&
+                (white == other.white) &&
+                (type == other.type);
+        }
+
+        public override int GetHashCode() {
+            return ((position.Row * 8) + position.Column) + (RenderID * 64);
+        }
 
     }
 
     class Pawn : Piece //Each of the piece types will be its own class which inherits from the abstract Piece class but with its own implementation of some things for the differences between pieces
     {
-        new public static byte type = Game.PAWN; 
+        public override byte type { get => Game.PAWN; }
+        public bool enPassant = false;
         //I'm using static variables to be able to use a name for the types of different pieces in various functions without needing to pass strings or class instances around, which is much less efficient and
         //easy in C# than in python. Instead, I've named some variables with integer values that are more efficient and easy to handle but they still have names so I don't need to remember them.
 
@@ -153,15 +167,24 @@ namespace ChessAI
         {
             position = startPosition; //Setting the internal position variable to the value of the temporary startPosition variable
             white = isWhite; //Setting the internal isWhite variable to the value of the temporary white variable
+            
         }
 
-        public override Position[] Moves()
+        public override List<Position> Moves()
         {
-            throw new NotImplementedException();
+            List<Position> output = new List<Position>();
+            if (white && Row > 0) {
+                output.Add(new Position((byte)(Row - 1), Column));
+            }
+            else if (!white && Row < 7) {
+                output.Add(new Position((byte)(Row + 1), Column));
+            }
+            output.AddRange(Threaten());
+            return output;
             //This needs to be implemented later, but for now it just crashes the program
         }
 
-        public override Position[] Threaten()
+        public override List<Position> Threaten()
         {
             Position[] output;
             //Initialize the existance of output but don't define its size or values yet
@@ -208,16 +231,28 @@ namespace ChessAI
                              //but in case that gets implemented later on I'll handle the case
             }
             // This code should never run, see comment inside
-            return output;
+            List<Position> final = new List<Position>();
+            foreach (Position move in output) {
+                if (MainPage.game.state.ContainsKey(move)) {
+                    final.Add(move);
+                }
+            }
+
+            return final;
             //Return the result
         }
+
+        public override int GetHashCode() {
+            return ((position.Row * 8) + position.Column) + (RenderID * 64) + (Convert.ToInt32(enPassant) * 1024);
+        }
+
 
     }
     
 
     class Knight : Piece
     {
-        new public static byte type = Game.KNIGHT; //Setting the type property of all knights to KNIGHT
+        public override byte type { get => Game.KNIGHT; } //Setting the type property of all knights to KNIGHT
         //I should explain what these keywords do:
         //new tells the compiler that I want to override the implementation of the same variable from the base class
         //public means the variable can be accessed by code from outside this class
@@ -230,7 +265,7 @@ namespace ChessAI
             white = isWhite;
         }
 
-        public override Position[] Moves()
+        public override List<Position> Moves()
         {
             throw new NotImplementedException();
         }
@@ -238,7 +273,7 @@ namespace ChessAI
 
     class Bishop : Piece
     {
-        new public static byte type = Game.BISHOP;
+        public override byte type { get => Game.BISHOP; }
 
         public Bishop(Position startPosition, bool isWhite)
         {
@@ -246,7 +281,7 @@ namespace ChessAI
             white = isWhite;
         }
 
-        public override Position[] Moves()
+        public override List<Position> Moves()
         {
             throw new NotImplementedException();
         }
@@ -254,7 +289,7 @@ namespace ChessAI
 
     class Rook : Piece
     {
-        new public static byte type = Game.ROOK;
+        public override byte type { get => Game.ROOK; }
         public bool canCastle; //Since the rook needs to keep track of whether or not it has moved on account of being involved in castling, it get a bool called canCastle for that purpose
         //Confusingly, overriding properties from the base class requires the new keyword or the compiler complains (though it does actually still work), but creating new properties does not
         //require the new keyword
@@ -266,15 +301,19 @@ namespace ChessAI
             canCastle = castle; //Also copying the castle value
         }
 
-        public override Position[] Moves()
+        public override List<Position> Moves()
         {
             throw new NotImplementedException();
+        }
+
+        public override int GetHashCode() {
+            return ((position.Row * 8) + position.Column) + (RenderID * 64) + (Convert.ToInt32(canCastle) * 1024);
         }
     }
 
     class Queen : Piece
     {
-        new public static byte type = Game.QUEEN;
+        public override byte type { get => Game.QUEEN; }
 
         public Queen(Position startPosition, bool isWhite)
         {
@@ -282,7 +321,7 @@ namespace ChessAI
             white = isWhite;
         }
 
-        public override Position[] Moves()
+        public override List<Position> Moves()
         {
             throw new NotImplementedException();
         }
@@ -290,7 +329,7 @@ namespace ChessAI
 
     class King : Piece
     {
-        new public static byte type = Game.KING;
+        public override byte type { get => Game.KING; }
         public bool canCastle; //The king also needs to keep track of its eligibility to castle
         //The king pieces do not directly worry about check and checkmate, that's the game state's job
 
@@ -301,9 +340,13 @@ namespace ChessAI
             canCastle = castle;
         }
 
-        public override Position[] Moves()
+        public override List<Position> Moves()
         {
             throw new NotImplementedException();
+        }
+
+        public override int GetHashCode() {
+            return ((position.Row * 8) + position.Column) + (RenderID * 64) + (Convert.ToInt32(canCastle) * 1024);
         }
     }
 }
