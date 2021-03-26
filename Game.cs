@@ -179,7 +179,12 @@ namespace ChessAI
             else if (!white && Row < 7) {
                 output.Add(new Position((byte)(Row + 1), Column));
             }
-            output.AddRange(Threaten());
+            try {
+                output.AddRange(Threaten());
+            }
+            catch (System.ArgumentNullException) {
+
+            }
             return output;
             //This needs to be implemented later, but for now it just crashes the program
         }
