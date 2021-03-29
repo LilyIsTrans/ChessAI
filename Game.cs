@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+
 namespace ChessAI
 {
 
@@ -82,7 +83,7 @@ namespace ChessAI
     class Game //Define a class called Game. I am going to use this class to hold various information that may need to be accessed in multiple places but which does not necessarily belong anywhere else.
                //It will mostly hold constant values that I may want to give names to but that are actually just aliases for simple constants, but it may also contain the gamestate later, I am yet to decide
     {
-        public const byte PAWN = 1, KNIGHT = 2, BISHOP = 3, ROOK = 4, QUEEN = 5, KING = 6;
+        public const byte PAWN = 1, KNIGHT = 2, BISHOP = 3, ROOK = 4, QUEEN = 5, KING = 6, PASSANT = 7;
         public const bool WHITE = true, BLACK = false;
         /* 1: Pawn
          * 2: Knight
@@ -129,16 +130,16 @@ namespace ChessAI
             }
         }
 
-        public abstract List<Position> Moves(); //Define an abstract method named Moves(). An abstract method is a method declared in an abstract class but with no implementation, to indicate that all subclasses
+        public abstract List<Position> Moves(GameState board); //Define an abstract method named Moves(). An abstract method is a method declared in an abstract class but with no implementation, to indicate that all subclasses
                                             //must define an implementation of the method. In this case, Moves() generates the legal moves a piece can take, which must be defined for each piece but is also
                                             //different for each piece, so it is defined as an abstract method to indicate that I must define it for all pieces.
 
-        public virtual List<Position> Threaten() //Define a virtual method named Threaten(). A virtual method is like an abstract method, but it has a default implementation which can be overridden by subclasses
+        public virtual List<Position> Threaten(GameState board) //Define a virtual method named Threaten(). A virtual method is like an abstract method, but it has a default implementation which can be overridden by subclasses
                                              //but doesn't need to be. In this case, most pieces simply threaten all of the positions which are legal moves, but pawns function differently, so I define
                                              //a virtual method for Threaten which defines it as simply returning Moves() for most pieces, but allows me to override it in Pawn where it works differently.
         {
             List<Position> output = new List<Position>();
-            foreach (Position move in Moves()) {
+            foreach (Position move in Moves(board)) {
                 output.Append(move);
             }
             return output;
@@ -154,12 +155,19 @@ namespace ChessAI
             return ((position.Row * 8) + position.Column) + (RenderID * 64);
         }
 
+        public virtual void Moved(Position move, GameState board) {
+            position = move;
+        }
+
+        public virtual bool CanCapture(Piece other) {
+            return white != other.white;
+        }
     }
 
     class Pawn : Piece //Each of the piece types will be its own class which inherits from the abstract Piece class but with its own implementation of some things for the differences between pieces
     {
         public override byte type { get => Game.PAWN; }
-        public bool enPassant = false;
+        public bool hasMoved = false;
         //I'm using static variables to be able to use a name for the types of different pieces in various functions without needing to pass strings or class instances around, which is much less efficient and
         //easy in C# than in python. Instead, I've named some variables with integer values that are more efficient and easy to handle but they still have names so I don't need to remember them.
 
@@ -170,88 +178,134 @@ namespace ChessAI
             
         }
 
-        public override List<Position> Moves()
+        public override List<Position> Moves(GameState board)
         {
             List<Position> output = new List<Position>();
-            if (white && Row > 0) {
-                output.Add(new Position((byte)(Row - 1), Column));
+            byte newRow;
+            if (white) {
+                newRow = (byte)(Row - 1);
             }
-            else if (!white && Row < 7) {
-                output.Add(new Position((byte)(Row + 1), Column));
+            else {
+                newRow = (byte)(Row + 1);
             }
-            try {
-                output.AddRange(Threaten());
-            }
-            catch (System.ArgumentNullException) {
+            //Calculate the new row
 
+            
+
+            int farLeft = Column - 1;
+            int farRight = Column + 1;
+            if (farLeft < 0) { farLeft = 0; }
+            if (farRight > 7) { farRight = 7; }
+
+            for (int column = farLeft; column <= farRight; column++ ) {
+                if ((white && Row > 0) || (!white && Row < 7)) {
+                    output.Add(new Position(newRow, (byte)column));
+                }
             }
-            return output;
+            //Add all possible positions
+            if (!hasMoved) { 
+                output.Add(new Position((byte)(Row + (newRow - Row) * 2), Column));
+            }
+
+            List<Position> final = new List<Position>();
+            final.AddRange(output);
+            foreach (Position move in output) {
+                Piece piece;
+                if ((move.Column == Column) == (board.state.ContainsKey(move))) {
+                    final.Remove(move);
+                }
+                else if ((move.Column != Column) && (board.state.TryGetValue(move, out piece))) {
+                    if (piece.white == white) {
+                        final.Remove(move);
+                    }
+                }
+                
+            }
+            //Filter where the pawn is blocked in front or doesn't have a target diagonally
+
+
+            return final;
             //This needs to be implemented later, but for now it just crashes the program
         }
 
-        public override List<Position> Threaten()
+        public override List<Position> Threaten(GameState board)
         {
-            Position[] output;
-            //Initialize the existance of output but don't define its size or values yet
-            switch (Column)
-            {
-                default:
-                    {
-                        output = new Position[2];
-                        output[0].Column = (byte)(Column - 1);
-                        output[1].Column = (byte)(Column + 1);
-                        break;
-                    }
-                case 0:
-                    {
-                        output = new Position[1];
-                        output[0].Column = 1;
-                        break;
-                    }
-                case 7:
-                    {
-                        output = new Position[1];
-                        output[0].Column = 1;
-                        break;
-                    }
-            }
-            //Figure out how many positions should be in the output based on the current column of the pawn.
-            if (white && Row > 0) {
-                for (int i = 0; i < output.Length; i++)
-                {
-                    output[i].Row = (byte)(Row - 1);
-                }
-            }
-            // Handle the case where the pawn is white and has not reached the end
-            else if (!white && Row < 8) {
-                for (int i = 0; i < output.Length; i++)
-                {
-                    output[i].Row = (byte)(Row + 1);
-                }
-            }
-            // Handle the case where the pawn is black and has not reached the end
-            else
-            {
-                return null; //If we are in the final row, there must be no positions left. Technically, this code should never run, since a pawn which reaches the end must promote,
-                             //but in case that gets implemented later on I'll handle the case
-            }
-            // This code should never run, see comment inside
-            List<Position> final = new List<Position>();
-            foreach (Position move in output) {
-                if (MainPage.game.state.ContainsKey(move)) {
-                    final.Add(move);
-                }
-            }
+            List<Position> output = new List<Position>();
+            //Initialize the existance of output but don't define its values yet
+            byte newRow = (byte)(Row + 1);
+            if (white) { newRow = (byte)(Row - 1); }
+            //Figure out the row
 
-            return final;
+            switch (Column) {
+                default:
+                    output.Add(new Position(newRow, (byte)(Column + 1)));
+                    output.Add(new Position(newRow, (byte)(Column - 1)));
+                    break;
+                case 0:
+                    output.Add(new Position(newRow, (byte)(Column + 1)));
+                    break;
+                case 7:
+                    output.Add(new Position(newRow, (byte)(Column - 1)));
+                    break;
+            }
+            //Add the columns
+
+            return output;
+            
             //Return the result
         }
 
         public override int GetHashCode() {
-            return ((position.Row * 8) + position.Column) + (RenderID * 64) + (Convert.ToInt32(enPassant) * 1024);
+            return ((position.Row * 8) + position.Column) + (RenderID * 64) + (Convert.ToInt32(hasMoved) * 1024);
+        }
+
+        public override void Moved(Position move, GameState board) {
+            if (Math.Abs(move.Row - Row) == 2) {
+                if (white) {
+                    board.state.Add(new Position((byte)(Row - 1), Column), new EnPassantPlaceholder(new Position((byte)(Row - 1), Column), white, board));
+                }
+                else {
+                    board.state.Add(new Position((byte)(Row + 1), Column), new EnPassantPlaceholder(new Position((byte)(Row + 1), Column), white, board));
+                }
+            }
+            hasMoved = true;
+            base.Moved(move, board);
         }
 
 
+    }
+
+    class EnPassantPlaceholder : Piece {
+        public override byte type => Game.PASSANT;
+        public override List<Position> Moves(GameState board) {
+            return new List<Position>(); //Return an empty list, the placeholder can't move anywhere
+        }
+
+        public override bool CanCapture(Piece other) {
+            return base.CanCapture(other) && (other.type == Game.PAWN); //Only pawns can capture En Passant
+        }
+
+        public EnPassantPlaceholder(Position Position, bool isWhite, GameState game) {
+            position = Position;
+            white = isWhite;
+            game.TurnCompleted += placeholder_TurnCompleted;
+            
+        }
+
+        void placeholder_TurnCompleted(object sender, GameState args) {
+            Piece piece;
+            if (args.state.TryGetValue(position, out piece)) {
+                if (piece == this) {
+                    args.state.Remove(position);
+                }
+                else if (white) {
+                    args.state.Remove(new Position((byte)(Row - 1), Column));
+                }
+                else {
+                    args.state.Remove(new Position((byte)(Row + 1), Column));
+                }
+            }
+        }
     }
     
 
@@ -270,7 +324,7 @@ namespace ChessAI
             white = isWhite;
         }
 
-        public override List<Position> Moves()
+        public override List<Position> Moves(GameState board)
         {
             throw new NotImplementedException();
         }
@@ -286,7 +340,7 @@ namespace ChessAI
             white = isWhite;
         }
 
-        public override List<Position> Moves()
+        public override List<Position> Moves(GameState board)
         {
             throw new NotImplementedException();
         }
@@ -306,7 +360,7 @@ namespace ChessAI
             canCastle = castle; //Also copying the castle value
         }
 
-        public override List<Position> Moves()
+        public override List<Position> Moves(GameState board)
         {
             throw new NotImplementedException();
         }
@@ -326,7 +380,7 @@ namespace ChessAI
             white = isWhite;
         }
 
-        public override List<Position> Moves()
+        public override List<Position> Moves(GameState board)
         {
             throw new NotImplementedException();
         }
@@ -345,7 +399,7 @@ namespace ChessAI
             canCastle = castle;
         }
 
-        public override List<Position> Moves()
+        public override List<Position> Moves(GameState board)
         {
             throw new NotImplementedException();
         }

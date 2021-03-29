@@ -43,6 +43,8 @@ namespace ChessAI
         public CanvasSvgDocument QueenWhite;
         public CanvasSvgDocument KingBlack;
         public CanvasSvgDocument KingWhite;
+        public CanvasSvgDocument PlaceholderBlack;
+        public CanvasSvgDocument PlaceholderWhite;
 
         private Color MoveHighlight;
         private Pawn pawn;
@@ -106,7 +108,10 @@ namespace ChessAI
             KingBlack = LoadAsset(sender, "KingBlack");
             KingWhite = LoadAsset(sender, "KingWhite");
 
-            translator = new RenderTranslator(PawnBlack, PawnWhite, KnightBlack, KnightWhite, BishopBlack, BishopWhite, RookBlack, RookWhite, QueenBlack, QueenWhite, KingBlack, KingWhite);
+            PlaceholderBlack = CanvasSvgDocument.LoadFromXml(sender, PawnBlack.GetXml().Replace("opacity=\"1\"", "opacity=\"0.5\""));
+            PlaceholderWhite = CanvasSvgDocument.LoadFromXml(sender, PawnWhite.GetXml().Replace("opacity=\"1\"", "opacity=\"0.5\""));
+
+            translator = new RenderTranslator(PawnBlack, PawnWhite, KnightBlack, KnightWhite, BishopBlack, BishopWhite, RookBlack, RookWhite, QueenBlack, QueenWhite, KingBlack, KingWhite, PlaceholderBlack, PlaceholderWhite);
             pieceSize = new Size(sender.Size.Width / 16, sender.Size.Height / 16);
 
             pawn = new Pawn(new Position(3, 3), true);

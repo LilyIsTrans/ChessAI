@@ -28,10 +28,10 @@
        id="mask-powermask-path-effect1337">
       <path
          id="mask-powermask-path-effect1337_box"
-         style="fill:#ffffff;fill-opacity:1"
+         style="fill:#ffffff;fill-opacity:0"
          d="M 11.584951,21.67234 H 46.627997 V 56.715386 H 11.584951 Z" />
 		<rect
-		   style="fill:#000000;fill-opacity:1;stroke:#000000;stroke-width:0.358884;stroke-opacity:1"
+		   style="fill:#000000;fill-opacity:0;stroke:#000000;stroke-width:0.358884;stroke-opacity:0"
 		   id="rect1335"
 		   width="44.732449"
 		   height="14.099051"
@@ -95,13 +95,13 @@
      inkscape:groupmode="layer"
      id="layer1">
     <circle
-       style="fill:#000000;fill-opacity:0;stroke:none;stroke-width:0.358884;stroke-opacity:1"
+       style="fill:#000000;fill-opacity:0;stroke:none;stroke-width:0.358884;stroke-opacity:0"
        id="path1247"
        cx="28.914215"
        cy="10.162635"
        r="3.9733689" />
     <circle
-       style="fill:#000000;fill-opacity:0;stroke:#000000;stroke-width:0.358884;stroke-opacity:1"
+       style="fill:#000000;fill-opacity:0;stroke:#000000;stroke-width:0.358884;stroke-opacity:0"
        id="path1243"
        mask="url(#mask-powermask-path-effect1337)"
        inkscape:path-effect="#path-effect1337"
@@ -115,13 +115,13 @@
        id="g1367"
        style="stroke:none">
       <circle
-         style="fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:0.358884;stroke-opacity:0"
+         style="fill:#ffffff;fill-opacity:0;stroke:none;stroke-width:0.358884;stroke-opacity:0"
          id="path1245-1"
          cx="28.978439"
          cy="20.736441"
          r="8.138998" />
       <circle
-         style="fill:#000000;fill-opacity:0;stroke:none;stroke-width:0.358884;stroke-opacity:1"
+         style="fill:#000000;fill-opacity:0;stroke:none;stroke-width:0.358884;stroke-opacity:0"
          id="path1245"
          cx="28.9783"
          cy="20.736919"
@@ -134,11 +134,11 @@
        cy="39.283524"
        cx="29.106524" />
     <path
-       style="fill:none;stroke:none;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       style="fill:none;stroke:none;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:0"
        d="M 12.895754,41.894498 H 45.369001"
        id="path1343" />
     <circle
-       style="fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:0.358884;stroke-opacity:1"
+       style="fill:#ffffff;fill-opacity:0;stroke:none;stroke-width:0.358884;stroke-opacity:0"
        id="path1247-7"
        cx="28.913811"
        cy="10.162811"

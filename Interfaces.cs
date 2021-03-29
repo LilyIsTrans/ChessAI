@@ -26,8 +26,10 @@ namespace ChessAI
     {
         internal Dictionary<byte, CanvasSvgDocument> map = new Dictionary<byte, CanvasSvgDocument>(); //Define a dictionary which maps bytes to Svg documents named map which can only be directly accessed through instances of this class
         public RenderTranslator(
-            CanvasSvgDocument PawnBlack, CanvasSvgDocument PawnWhite, CanvasSvgDocument KnightBlack, CanvasSvgDocument KnightWhite, CanvasSvgDocument BishopBlack, CanvasSvgDocument BishopWhite, CanvasSvgDocument RookBlack, CanvasSvgDocument RookWhite, CanvasSvgDocument QueenBlack, CanvasSvgDocument QueenWhite, CanvasSvgDocument KingBlack, CanvasSvgDocument KingWhite)
+            CanvasSvgDocument PawnBlack, CanvasSvgDocument PawnWhite, CanvasSvgDocument KnightBlack, CanvasSvgDocument KnightWhite, CanvasSvgDocument BishopBlack, CanvasSvgDocument BishopWhite, CanvasSvgDocument RookBlack, CanvasSvgDocument RookWhite, CanvasSvgDocument QueenBlack, CanvasSvgDocument QueenWhite, CanvasSvgDocument KingBlack, CanvasSvgDocument KingWhite, CanvasSvgDocument PlaceholderBlack, CanvasSvgDocument PlaceholderWhite)
         {
+            
+
             map.Add(0b0001, PawnBlack); //Map the RenderID of any given piece to the corresponding SVG object.
             map.Add(0b1001, PawnWhite); //The way the encoding works is simple; it is the type of the piece, with 16 added if the piece is white.
             map.Add(0b0010, KnightBlack); //This means that in binary, the RenderID is 0 or 1 depending on the colour of the piece, followed by the piece's type ID in binary.
@@ -40,6 +42,8 @@ namespace ChessAI
             map.Add(0b1101, QueenWhite);
             map.Add(0b0110, KingBlack);
             map.Add(0b1110, KingWhite);
+            map.Add(0b0111, PlaceholderBlack);
+            map.Add(0b1111, PlaceholderWhite);
         }
     }
 
@@ -104,7 +108,7 @@ namespace ChessAI
         public void Select(Position position) {
             if (Moves.Count == 0) { //Check if moves is empty
                 try {
-                    Moves = state[position].Moves(); //Set moves to all the possible moves of the piece at the position that was clicked
+                    Moves = state[position].Moves(this); //Set moves to all the possible moves of the piece at the position that was clicked
                 }
                 catch (System.Collections.Generic.KeyNotFoundException) { //Catch if they click a blank tile
                     Moves = new List<Position>(); //Reset Moves
@@ -118,12 +122,20 @@ namespace ChessAI
                     state.Remove(selected); //Remove the piece being moved from its current board position
                     state.Remove(position); //Capture any pieces at the location the piece is moving to (it is the piece's job to not add positions they cannot capture such as allies to the move list)
                     state.Add(position, piece); //Add the piece back to the board in its new position
-                    state[position].position = position; //Update the place the piece thinks it is
+                    OnTurnCompleted(EventArgs.Empty); //Raise the TurnCompleted event, so that any logic that needs to happen at the end of a turn can do so
+                    piece.Moved(position, this); //Tell the piece that it moved and where
                 }
 
                 Moves = new List<Position>(); //Reset moves to nothing
             }
             
+        }
+
+        public event EventHandler<GameState> TurnCompleted; //Declare an event called TurnCompleted
+
+        protected virtual void OnTurnCompleted(EventArgs args) { //Create a new event method for TurnCompleted
+            EventHandler<GameState> handler = TurnCompleted; //Set the event method to be for the TurnCompleted event
+            handler?.Invoke(this, this); //Invoke the event (cause all subscribers to the event to handle the event)
         }
 
         
