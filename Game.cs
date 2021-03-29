@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Diagnostics;
 
 
 namespace ChessAI
@@ -282,7 +283,7 @@ namespace ChessAI
         }
 
         public override bool CanCapture(Piece other) {
-            return base.CanCapture(other) && (other.type == Game.PAWN); //Only pawns can capture En Passant
+            return true;
         }
 
         public EnPassantPlaceholder(Position Position, bool isWhite, GameState game) {
@@ -298,10 +299,10 @@ namespace ChessAI
                 if (piece == this) {
                     args.state.Remove(position);
                 }
-                else if (white) {
+                else if (white && !piece.white && piece.type == Game.PAWN) {
                     args.state.Remove(new Position((byte)(Row - 1), Column));
                 }
-                else {
+                else if (!white && piece.white && piece.type == Game.PAWN) {
                     args.state.Remove(new Position((byte)(Row + 1), Column));
                 }
             }
@@ -326,7 +327,26 @@ namespace ChessAI
 
         public override List<Position> Moves(GameState board)
         {
-            throw new NotImplementedException();
+            List<Position> output = new List<Position>();
+            //Declare and instantiate new list called output
+            for (int column = Column - 2; column <= Column + 2; column += 1) {
+                for (int row = Row - 2; row <= Row + 2; row += 1) {
+                    if ((row != Row) && (column != Column) && ((Math.Abs(Row - row) + Math.Abs(Column - column)) == 3)) {
+                        Piece target;
+                        if (board.state.TryGetValue(new Position((byte)row, (byte)column), out target) == false) {
+                            output.Add(new Position((byte)row, (byte)column));
+                        }
+                        else if (target.CanCapture(this)) {
+                            output.Add(new Position((byte)row, (byte)column));
+                        }
+                        
+                    }
+                }
+            }
+            
+
+
+            return output;
         }
     }
 
@@ -340,9 +360,69 @@ namespace ChessAI
             white = isWhite;
         }
 
-        public override List<Position> Moves(GameState board)
-        {
-            throw new NotImplementedException();
+        public override List<Position> Moves(GameState board) {
+
+            List<Position> output = new List<Position>();
+            
+            for (byte i = 1; i <= 7; i++) {
+                Position move = new Position((byte)(Row + i), (byte)(Column + i));
+                Piece tile;
+                if (board.state.TryGetValue(move, out tile)) {
+                    if (tile.CanCapture(this)) {
+                        output.Add(move);
+                        Debug.WriteLine($"Wrote move {move.Row}, {move.Column} to output");
+                    }
+                    if (tile.type != Game.PASSANT) {
+                        break;
+                    }
+                }
+                output.Add(move);
+            }
+
+            for (byte i = 1; i <= 7; i++) {
+                Position move = new Position((byte)(Row - i), (byte)(Column + i));
+                Piece tile;
+                if (board.state.TryGetValue(move, out tile)) {
+                    if (tile.CanCapture(this)) {
+                        output.Add(move);
+                        Debug.WriteLine($"Wrote move {move.Row}, {move.Column} to output");
+                    }
+                    if (tile.type != Game.PASSANT) {
+                        break;
+                    }
+                }
+                output.Add(move);
+            }
+
+            for (byte i = 1; i <= 7; i++) {
+                Position move = new Position((byte)(Row + i), (byte)(Column - i));
+                Piece tile;
+                if (board.state.TryGetValue(move, out tile)) {
+                    if (tile.CanCapture(this)) {
+                        output.Add(move);
+                    }
+                    if (tile.type != Game.PASSANT) {
+                        break;
+                    }
+                }
+                output.Add(move);
+            }
+
+            for (byte i = 1; i <= 7; i++) {
+                Position move = new Position((byte)(Row - i), (byte)(Column - i));
+                Piece tile;
+                if (board.state.TryGetValue(move, out tile)) {
+                    if (tile.CanCapture(this)) {
+                        output.Add(move);
+                    }
+                    if (tile.type != Game.PASSANT) {
+                        break;
+                    }
+                }
+                output.Add(move);
+            }
+
+            return output;
         }
     }
 
@@ -362,7 +442,65 @@ namespace ChessAI
 
         public override List<Position> Moves(GameState board)
         {
-            throw new NotImplementedException();
+            
+            List<Position> output = new List<Position>();
+            for (byte column = (byte)(Column + 1); column <= 7; column++) {
+                Position move = new Position(Row, column);
+                Piece tile;
+                if (board.state.TryGetValue(move, out tile)) {
+                    if (tile.CanCapture(this)) {
+                        output.Add(move);
+                    }
+                    if (tile.type != Game.PASSANT) {
+                        break;
+                    }
+                }
+                output.Add(move);
+            }
+
+            for (byte column = (byte)(Column - 1); column != 255; column--) {
+                Position move = new Position(Row, column);
+                Piece tile;
+                if (board.state.TryGetValue(move, out tile)) {
+                    if (tile.CanCapture(this)) {
+                        output.Add(move);
+                    }
+                    if (tile.type != Game.PASSANT) {
+                        break;
+                    }
+                }
+                output.Add(move);
+            }
+
+            for (byte row = (byte)(Row + 1); row <= 7; row++) {
+                Position move = new Position(row, Column);
+                Piece tile;
+                if (board.state.TryGetValue(move, out tile)) {
+                    if (tile.CanCapture(this)) {
+                        output.Add(move);
+                    }
+                    if (tile.type != Game.PASSANT) {
+                        break;
+                    }
+                }
+                output.Add(move);
+            }
+
+            for (byte row = (byte)(Row - 1); row != 255; row--) {
+                Position move = new Position(row, Column);
+                Piece tile;
+                if (board.state.TryGetValue(move, out tile)) {
+                    if (tile.CanCapture(this)) {
+                        output.Add(move);
+                    }
+                    if (tile.type != Game.PASSANT) {
+                        break;
+                    }
+                    
+                }
+                output.Add(move);
+            }
+            return output;
         }
 
         public override int GetHashCode() {
