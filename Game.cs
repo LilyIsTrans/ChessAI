@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Diagnostics;
-
 
 namespace ChessAI
 {
@@ -370,7 +368,6 @@ namespace ChessAI
                 if (board.state.TryGetValue(move, out tile)) {
                     if (tile.CanCapture(this)) {
                         output.Add(move);
-                        Debug.WriteLine($"Wrote move {move.Row}, {move.Column} to output");
                     }
                     if (tile.type != Game.PASSANT) {
                         break;
@@ -385,7 +382,6 @@ namespace ChessAI
                 if (board.state.TryGetValue(move, out tile)) {
                     if (tile.CanCapture(this)) {
                         output.Add(move);
-                        Debug.WriteLine($"Wrote move {move.Row}, {move.Column} to output");
                     }
                     if (tile.type != Game.PASSANT) {
                         break;
