@@ -506,6 +506,11 @@ namespace ChessAI
         public override int GetHashCode() {
             return ((position.Row * 8) + position.Column) + (RenderID * 64) + (Convert.ToInt32(canCastle) * 1024);
         }
+
+        public override void Moved(Position move, GameState board) {
+            base.Moved(move, board);
+            canCastle = false;
+        }
     }
 
     class Queen : Piece
@@ -520,7 +525,15 @@ namespace ChessAI
 
         public override List<Position> Moves(GameState board)
         {
-            throw new NotImplementedException();
+            List<Position> output = new List<Position>();
+            Bishop bishop = new Bishop(position, white);
+            Rook rook = new Rook(position, white);
+            output.AddRange(bishop.Moves(board));
+            output.AddRange(rook.Moves(board));
+            //Simply add together the moves of a bishop and the moves of a rook in the queen's position
+
+
+            return output;
         }
     }
 
@@ -539,11 +552,29 @@ namespace ChessAI
 
         public override List<Position> Moves(GameState board)
         {
-            throw new NotImplementedException();
+            List<Position> output = new List<Position>();
+            for (byte column = (byte)(Column - 1); column <= Column + 1; column++) {
+                for (byte row = (byte)(Row - 1); row <= Row + 1; row++) {
+                    if ((row != Row) || (column != Column)) {
+                        if (!board.Threatened(new Position(row, column), white)) {
+                            output.Add(new Position(row, column));
+                        }
+                    }
+                }
+            }
+
+            
+
+            return output;
         }
 
         public override int GetHashCode() {
             return ((position.Row * 8) + position.Column) + (RenderID * 64) + (Convert.ToInt32(canCastle) * 1024);
+        }
+
+        public override void Moved(Position move, GameState board) {
+            base.Moved(move, board);
+            canCastle = false;
         }
     }
 }

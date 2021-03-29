@@ -138,7 +138,16 @@ namespace ChessAI
             handler?.Invoke(this, this); //Invoke the event (cause all subscribers to the event to handle the event)
         }
 
-        
+        public bool Threatened(Position position, bool white) {
+            foreach (Piece piece in state.Values) {
+                if (piece.white != white) {
+                    if (piece.Threaten(this).Contains(position)) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
 
 
 
