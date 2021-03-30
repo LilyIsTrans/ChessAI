@@ -8,7 +8,7 @@
 
   <Identity
     Name="080f5163-a4e7-4d14-b288-01eba54973e4"
-    Publisher="CN=riley"
+    Publisher="CN=Riley Debug"
     Version="1.0.1.0" />
 
   <mp:PhoneIdentity PhoneProductId="080f5163-a4e7-4d14-b288-01eba54973e4" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>

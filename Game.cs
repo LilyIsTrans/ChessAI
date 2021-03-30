@@ -101,6 +101,7 @@ namespace ChessAI
 
         public Position position; //Declare that there will be a Position type variable named position, but don't define it
         public bool white; //Declare a bool (boolean, true/false) to keep track of whether a given piece is white
+        public bool canCastle = false;
         public abstract byte type { get; } //Declare an integer named type. This will be set in each of the subclasses
 
         public byte Row //Define a property named Row. Properties are declared like variables, but defined sort of like functions with get and set methods that tell the code how to find the value.
@@ -549,17 +550,42 @@ namespace ChessAI
         public override List<Position> Moves(GameState board)
         {
             List<Position> output = new List<Position>();
+            
             for (byte column = (byte)(Column - 1); column <= Column + 1; column++) {
                 for (byte row = (byte)(Row - 1); row <= Row + 1; row++) {
                     if ((row != Row) || (column != Column)) {
                         if (!board.Threatened(new Position(row, column), white)) {
-                            output.Add(new Position(row, column));
+                            Piece target;
+                            if (board.state.TryGetValue(new Position(row, column), out target)) {
+                                if (target.white != white) {
+                                    output.Add(new Position(row, column));
+                                }
+                            }
                         }
                     }
                 }
             }
-
+            //All the normal king moves
             
+            if (canCastle) {
+                Piece kingSide;
+                Piece queenSide;
+                byte row = (byte)(7 * Convert.ToInt32(white)); //Calculate the home row
+                if (board.state.TryGetValue(new Position(row, 0), out queenSide)) {
+                    if ((queenSide.type == Game.ROOK) && (queenSide.white == white) && queenSide.canCastle) {
+                        if (!board.state.ContainsKey(new Position(row, 3)) && !board.state.ContainsKey(new Position(row, 2)) && !board.state.ContainsKey(new Position(row, 1)) &&
+                            !board.Threatened(new Position(row, 3), white) && !board.Threatened(new Position(row, 2), white) && !board.Threatened(new Position(row, 4), white)
+                            ) { //Check that all the positions between the king and the rook are empty, and all the positions from the king to one before the rook are not threatened.
+                            output.Add(new Position(row, 2));
+                        }
+                    }
+                }
+            }
+            
+            
+
+
+
 
             return output;
         }

@@ -18,7 +18,7 @@
     <ProjectTypeGuids>{A5A43C5B-DE2A-4C0C-9213-0A381AF9435A};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <WindowsXamlEnableOverview>true</WindowsXamlEnableOverview>
     <AppxPackageSigningEnabled>True</AppxPackageSigningEnabled>
-    <PackageCertificateThumbprint>54993DBA292AF39773C8C901284DF80B4C43B6F6</PackageCertificateThumbprint>
+    <PackageCertificateThumbprint>085A51604ED74644D30DB1461D23A9664AD2E846</PackageCertificateThumbprint>
     <PackageCertificateKeyFile />
     <GenerateAppInstallerFile>False</GenerateAppInstallerFile>
     <AppxPackageSigningTimestampDigestAlgorithm>SHA256</AppxPackageSigningTimestampDigestAlgorithm>
@@ -229,6 +229,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Certificate.pfx" />
+    <None Include="ChessAI_TemporaryKey.pfx" />
     <None Include="RileyChessAI.pfx" />
     <None Include="RileyChessKey.pfx" />
     <None Include="RileyChessKeyTest.pfx" />
@@ -237,7 +238,7 @@
     <VisualStudioVersion>14.0</VisualStudioVersion>
   </PropertyGroup>
   <PropertyGroup>
-    <SignAssembly>true</SignAssembly>
+    <SignAssembly>false</SignAssembly>
   </PropertyGroup>
   <PropertyGroup>
     <AssemblyOriginatorKeyFile>RileyChessAI.pfx</AssemblyOriginatorKeyFile>
