@@ -88,7 +88,7 @@ namespace ChessAI {
             }
 
             foreach (Position move in game.Moves) {
-                args.DrawingSession.DrawCircle((float)(move.Column * pieceSize.Width + pieceSize.Width / 2), (float)(move.Row * pieceSize.Height + pieceSize.Height / 2), (float)(pieceSize.Height / 4), MoveHighlight);
+                args.DrawingSession.DrawCircle((float)(move.Column * pieceSize.Width + pieceSize.Width / 2), (float)(move.Row * pieceSize.Height + pieceSize.Height / 2), (float)(pieceSize.Height / 4), MoveHighlight, 10);
             }
 
         }

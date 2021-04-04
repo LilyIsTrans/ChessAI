@@ -11,19 +11,41 @@ namespace ChessAI {
         public Position(byte row, byte column) //Structs have class-like constructor methods. A byte is just an int that only spans one byte in memory.
                                                //Since the positions on a chess board are small numbers, I can use them here, and they are a little faster and more memory efficient.
         {
-            nrow = row; //I named the internal variables nrow and ncolumn because I had so many variables named row and column I couldn't do it with capitalization without being ugly, so I just did this instead.
-            ncolumn = column;
+            index = (byte)(row * 8 + column);
+            if (index >= 64) {
+                throw new ArgumentOutOfRangeException("Both row and column must be less than 8");
+            }
         }
-        private byte nrow; //The internal variables of the struct are private, since the values should be checked for validity before being used.
-        private byte ncolumn;
+        public Position(byte Index) {
+            index = Index;
+            if (index >= 64) {
+                throw new ArgumentOutOfRangeException("Index must be less than 64");
+            }
+        }
+        public Position(int Index) {
+            index = (byte)Index;
+            if (index >= 64 || index < 0) {
+                throw new ArgumentOutOfRangeException("Index must be an integer which is greater than or equal to 0 and less than 64");
+            }
+        }
+        public Position(int row, int column) {
+            index = (byte)(row * 8 + column);
+            if (index >= 64 || index < 0) {
+                throw new ArgumentOutOfRangeException("Both row and column must be integers which are greater than or equal to 0 and less than 8");
+            }
+        }
+
+
+        private byte index;
         public byte Row //Define a property named Row.
         {
-            get => nrow; //This => operator just tells it to define the function on the left to return the expression on the right. It's a lot like lambda in python.
+            get => (byte)(index >> 3); //This => operator just tells it to define the function on the left to return the expression on the right. It's a lot like lambda in python.
+            //Return index bit shifted right 3, getting just the first 3 bits (if we pretend it is 6 bits not 32) which hold the row
             set //The set method of a property tells the code what to do when code tries to set the value of the property. Inside the set method, there is a special variable named value which is just whatever the property is being set to.
             {
                 if ((0 <= value) && (value < 8)) //Check if the value is 0, 1, 2, 3, 4, 5, 6, or 7
                 {
-                    ncolumn = value; //Set the internal value
+                    index = (byte)(Column + value); //Set the internal value
                 }
                 else {
                     throw new ArgumentOutOfRangeException("Row", "Row must be greater than or equal to 0 and less than 8");
@@ -34,10 +56,11 @@ namespace ChessAI {
         }
         public byte Column //Define property named Column. Identical to Row except that it's the columns.
         {
-            get => ncolumn;
+            get => (byte)(index - ((index >> 3) << 3));
+            //Return index bit shifted right 3 subtracted from the index, which will get just the last 3 bits representing the column
             set {
                 if ((0 <= value) && (value < 8)) {
-                    ncolumn = value;
+                    index = (byte)(Row + value);
                 }
                 else {
                     throw new ArgumentOutOfRangeException("Column", "Column must be greater than or equal to 0 and less than 8");
@@ -52,15 +75,12 @@ namespace ChessAI {
 
         public bool Equals(Position other) //This is the one that I defined, it takes in another Position and returns true if both the row and column of the other are equal to the row and column of this position.
         {
-            return (Column == other.Column) && (Row == other.Row);
+            return (index == other.index);
         }
 
-        public override int GetHashCode() //This is part of IEquatable and was auto-generated, my undertstanding is it generates a unique integer for all possible Positions that can be used to check for equality
+        public override int GetHashCode() //This is part of IEquatable, it is supposed to return an integer representation of any given instance of Position which is consistent (two equal Positions will return the same hash) but not necessarily unique (two different Positions do not necessarily need to return different hashes). 
         {
-            int hashCode = 240067226;
-            hashCode = hashCode * -1521134295 + Row.GetHashCode();
-            hashCode = hashCode * -1521134295 + Column.GetHashCode();
-            return hashCode;
+            return index; //Since the core of the struct is just a wrapper over an integer, we can just return that
         }
 
         public static bool operator ==(Position left, Position right) //This was autogenerated, but I understand it fully. It defines how the == operator behaves between two positons, returning the value of the Equals method
@@ -73,13 +93,48 @@ namespace ChessAI {
             return !(left == right);
         }
 
+        public static implicit operator byte(Position position) => position.index;
+        public static implicit operator Position(byte index) => new Position(index);
+        public static implicit operator int(Position position) => position.index;
+        public static implicit operator Position(int index) => new Position((byte)index);
+
+        public static int operator +(Position position) => position.index;
+        public static int operator -(Position position) => position.index;
+        public static int operator +(Position a, Position b) => a.index + b.index;
+        public static int operator -(Position a, Position b) => a.index - b.index;
+        public static int operator +(Position a, int b) => a.index + b;
+        public static int operator +(int a, Position b) => a + b.index;
+        public static int operator -(Position a, int b) => a.index - b;
+        public static int operator -(int a, Position b) => a - b.index;
+        public static bool operator ==(int a, Position b) => (a == b.index);
+        public static bool operator !=(int a, Position b) => (a != b.index);
+        public static bool operator ==(Position a, int b) => (a.index == b);
+        public static bool operator !=(Position a, int b) => (a.index != b);
+        public static bool operator <(Position a, Position b) => (a.index < b.index);
+        public static bool operator >(Position a, Position b) => (a.index > b.index);
+        public static bool operator <=(Position a, Position b) => (a.index <= b.index);
+        public static bool operator >=(Position a, Position b) => (a.index >= b.index);
+        public static bool operator < (int a, Position b) => (a < b.index);
+        public static bool operator > (int a, Position b) => (a > b.index);
+        public static bool operator <=(int a, Position b) => (a <= b.index);
+        public static bool operator >=(int a, Position b) => (a >= b.index);
+        public static bool operator < (Position a, int b) => (a.index < b);
+        public static bool operator > (Position a, int b) => (a.index > b);
+        public static bool operator <=(Position a, int b) => (a.index <= b);
+        public static bool operator >=(Position a, int b) => (a.index >= b);//Operator definitions
+
+
     }
 
-    class Game //Define a class called Game. I am going to use this class to hold various information that may need to be accessed in multiple places but which does not necessarily belong anywhere else.
+    static class Game //Define a class called Game. I am going to use this class to hold various information that may need to be accessed in multiple places but which does not necessarily belong anywhere else.
                //It will mostly hold constant values that I may want to give names to but that are actually just aliases for simple constants, but it may also contain the gamestate later, I am yet to decide
     {
         public const byte PAWN = 1, KNIGHT = 2, BISHOP = 3, ROOK = 4, QUEEN = 5, KING = 6, PASSANT = 7;
         public const bool WHITE = true, BLACK = false;
+        public static readonly int[] diagonals = { 9, 7, -7, -9 };
+        public static readonly int[] laterals = { 8, 1, -1, -8 };
+        public static readonly int[] adjacents = { 9, 8, 7, 1, -1, -7, -8, -9 };
+        public static readonly int[] knightMoves = { 6, 15, 17, 10, -6, -15, -17, -10 };
         /* 1: Pawn
          * 2: Knight
          * 3: Bishop
@@ -87,177 +142,126 @@ namespace ChessAI {
          * 5: Queen
          * 6: King
          */
+        public static List<Position> SlideMoves(GameState board, int[] directions, Piece mover) {
+
+            List<Position> output = new List<Position>();
+            foreach (int direction in directions) {
+                for (int dist = direction; 0 <= (mover.position + dist) && (mover.position + dist) < 64; dist += direction) {
+                    if (mover.CanMoveTo(mover.position + dist, board)) {
+                        output.Add(mover.position + dist);
+                    }
+                    if (board.state.ContainsKey(mover.position + dist)) {
+                        switch (board.state[mover.position + dist].RenderID) {
+                            case 0b1111:
+                            case 0b0111:
+                                continue;
+                            default:
+                                goto NextDirection;
+                        }
+                    }
+                }
+                NextDirection: { }
+            }
+            return output;
+
+        }
 
 
 
     }
 
-    public abstract class Piece : IEquatable<Piece> //Defining a class as abstract tells the program that I intend to use this class to define general properties that many subclasses will inherit, but will not actually instantiate any instances of the base class
-    {
+    public abstract class Piece {
+        public Position position;
+        public bool IsWhite;
+        public bool hasMoved = false;
+        public virtual byte type { get; }
 
-        public Position position; //Declare that there will be a Position type variable named position, but don't define it
-        public bool white; //Declare a bool (boolean, true/false) to keep track of whether a given piece is white
-        public abstract byte type { get; } //Declare an integer named type. This will be set in each of the subclasses
-
-        public byte Row //Define a property named Row. Properties are declared like variables, but defined sort of like functions with get and set methods that tell the code how to find the value.
-                        //It's basically saying that I want to be able to treat this like a variable when I use it elsewhere, but run some code to actually determine the value
-        {
-            get => position.Row;
-            set {
-                if (value < 8) { position.Row = value; }
-            }
-        }
-        public byte Column //Define a property named Column
-        {
-            get => position.Column;
-            set {
-                if (value < 8) { position.Column = value; }
+        public byte RenderID {
+            get {
+                return (byte)(type + (Convert.ToInt32(IsWhite) << 3));
             }
         }
 
-        public byte RenderID => (byte)(type + (8 * Convert.ToInt32(white)));
-
-        public abstract List<Position> Moves(GameState board); //Define an abstract method named Moves(). An abstract method is a method declared in an abstract class but with no implementation, to indicate that all subclasses
-                                                               //must define an implementation of the method. In this case, Moves() generates the legal moves a piece can take, which must be defined for each piece but is also
-                                                               //different for each piece, so it is defined as an abstract method to indicate that I must define it for all pieces.
-
-        public virtual List<Position> Threaten(GameState board) //Define a virtual method named Threaten(). A virtual method is like an abstract method, but it has a default implementation which can be overridden by subclasses
-                                                                //but doesn't need to be. In this case, most pieces simply threaten all of the positions which are legal moves, but pawns function differently, so I define
-                                                                //a virtual method for Threaten which defines it as simply returning Moves() for most pieces, but allows me to override it in Pawn where it works differently.
-        {
-            return Moves(board);
-        }
-
-        public virtual bool Equals(Piece other) {
-            return (position == other.position) &&
-                (white == other.white) &&
-                (type == other.type);
-        }
+        public abstract List<Position> Moves(GameState board);
+        public virtual List<Position> Threaten(GameState board) => Moves(board);
 
         public override int GetHashCode() {
-            return ((position.Row * 8) + position.Column) + (RenderID * 64);
+            return (RenderID + (Convert.ToInt32(hasMoved) << 4) + (position << 10));
         }
+        public static explicit operator int(Piece piece) => piece.GetHashCode();
+        
+
+        
 
         public virtual void Moved(Position move, GameState board) {
+            hasMoved = true;
             position = move;
         }
 
-        public virtual bool CanCapture(Piece other) {
-            return white != other.white;
+        public bool CanCapture(Piece other) {
+            return other.CanBeCaptured(this);
         }
 
-        public virtual void undoMove() {
+        public virtual bool CanMoveTo(Position position, GameState board) {
+            Piece target;
+            if (board.state.TryGetValue(position, out target)) {
+                return CanCapture(target);
+            }
+            else {
+                return true;
+            }
+        }
 
+        public virtual bool CanBeCaptured(Piece other) {
+            return (other.IsWhite != IsWhite);
         }
     }
 
-    class Pawn : Piece //Each of the piece types will be its own class which inherits from the abstract Piece class but with its own implementation of some things for the differences between pieces
-    {
+    class Pawn : Piece {
         public override byte type => Game.PAWN;
-        public bool hasMoved = false;
-        //I'm using static variables to be able to use a name for the types of different pieces in various functions without needing to pass strings or class instances around, which is much less efficient and
-        //easy in C# than in python. Instead, I've named some variables with integer values that are more efficient and easy to handle but they still have names so I don't need to remember them.
-
-        public Pawn(Position startPosition, bool isWhite) //The constructor method for Pawn is called when a Pawn is created. It takes in a position (the initial position of the pawn) and whether the pawn is white
-        {
-            position = startPosition; //Setting the internal position variable to the value of the temporary startPosition variable
-            white = isWhite; //Setting the internal isWhite variable to the value of the temporary white variable
-
-        }
-
         public override List<Position> Moves(GameState board) {
             List<Position> output = new List<Position>();
-            byte newRow;
-            if (white) {
-                newRow = (byte)(Row - 1);
+            int rowDifference = IsWhite ? -8 : 8; //Set rowDifference to -8 if IsWhite, 8 otherwise
+            if (!board.state.ContainsKey(position + rowDifference)) { //If there is no piece directly in front of the pawn
+                output.Add(position + rowDifference); //Add the move directly in front of the pawn to the output list
             }
-            else {
-                newRow = (byte)(Row + 1);
-            }
-            //Calculate the new row
-
-
-
-            int farLeft = Column - 1;
-            int farRight = Column + 1;
-            if (farLeft < 0) { farLeft = 0; }
-            if (farRight > 7) { farRight = 7; }
-
-            for (int column = farLeft; column <= farRight; column++) {
-                if ((white && Row > 0) || (!white && Row < 7)) {
-                    output.Add(new Position(newRow, (byte)column));
-                }
-            }
-            //Add all possible positions
-            if (!hasMoved) {
-                output.Add(new Position((byte)(Row + (newRow - Row) * 2), Column));
-            }
-
-            List<Position> final = new List<Position>();
-            final.AddRange(output);
-            foreach (Position move in output) {
-                Piece piece;
-                if ((move.Column == Column) == (board.state.ContainsKey(move))) {
-                    final.Remove(move);
-                }
-                else if ((move.Column != Column) && (board.state.TryGetValue(move, out piece))) {
-                    if (piece.white == white) {
-                        final.Remove(move);
+            for (int i = position.Column == 0 ? 1 : -1; i <= (position.Column == 7 ? -1 : 1); i++) { //Loop through the possible column offsets using inline conditionals to filter out nonexistant columns
+                Piece target;
+                if (board.state.TryGetValue(position + rowDifference + i, out target)) { //Check if the position has a piece at that location and if so what it is
+                    if (CanCapture(target)) {
+                        output.Add(position + rowDifference + i);
                     }
                 }
-
             }
-            //Filter where the pawn is blocked in front or doesn't have a target diagonally
-
-
-            return final;
-            //This needs to be implemented later, but for now it just crashes the program
+            if (!((hasMoved) || (board.state.ContainsKey(position + rowDifference)) || (board.state.ContainsKey(position + rowDifference + rowDifference)))) { //If the piece hasn't moved and there are no pieces in the first two positions in front of it, add double pawn move to the output
+                output.Add(position + rowDifference * 2);
+            }
+            return output;
         }
 
         public override List<Position> Threaten(GameState board) {
+            int rowDifference = IsWhite ? -8 : 8; //Set rowDifference to -8 if IsWhite, 8 otherwise
             List<Position> output = new List<Position>();
-            //Initialize the existance of output but don't define its values yet
-            byte newRow = (byte)(Row + 1);
-            if (white) { newRow = (byte)(Row - 1); }
-            //Figure out the row
-
-            switch (Column) {
-                default:
-                    output.Add(new Position(newRow, (byte)(Column + 1)));
-                    output.Add(new Position(newRow, (byte)(Column - 1)));
-                    break;
-                case 0:
-                    output.Add(new Position(newRow, (byte)(Column + 1)));
-                    break;
-                case 7:
-                    output.Add(new Position(newRow, (byte)(Column - 1)));
-                    break;
+            for (int i = position.Column == 0 ? 1 : -1; i <= (position.Column == 7 ? -1 : 1); i++) { //Loop through the possible column offsets using inline conditionals to filter out nonexistant columns
+                if (board.state.ContainsKey(position + rowDifference + i)) { //Check if the position has a piece at that location and if so what it is
+                    output.Add(position + rowDifference + i);
+                }
             }
-            //Add the columns
-
             return output;
-
-            //Return the result
-        }
-
-        public override int GetHashCode() {
-            return ((position.Row * 8) + position.Column) + (RenderID * 64) + (Convert.ToInt32(hasMoved) * 1024);
         }
 
         public override void Moved(Position move, GameState board) {
-            if (Math.Abs(move.Row - Row) == 2) {
-                if (white) {
-                    board.state.Add(new Position((byte)(Row - 1), Column), new EnPassantPlaceholder(new Position((byte)(Row - 1), Column), white, board));
-                }
-                else {
-                    board.state.Add(new Position((byte)(Row + 1), Column), new EnPassantPlaceholder(new Position((byte)(Row + 1), Column), white, board));
-                }
+            if (Math.Abs(move - position) == 2) {
+                int rowOffset = IsWhite ? -1 : 1;
+                board.state.Add(position + rowOffset, new EnPassantPlaceholder(position + rowOffset, IsWhite, board));
             }
-            hasMoved = true;
             base.Moved(move, board);
         }
 
-
+        public Pawn(Position startPosition, bool isWhite) {
+            position = startPosition;
+            IsWhite = isWhite;
+        }
     }
 
     class EnPassantPlaceholder : Piece {
@@ -266,13 +270,13 @@ namespace ChessAI {
             return new List<Position>(); //Return an empty list, the placeholder can't move anywhere
         }
 
-        public override bool CanCapture(Piece other) {
+        public override bool CanBeCaptured(Piece other) {
             return true;
         }
 
         public EnPassantPlaceholder(Position Position, bool isWhite, GameState game) {
             position = Position;
-            white = isWhite;
+            IsWhite = isWhite;
             game.TurnCompleted += placeholder_TurnCompleted;
 
         }
@@ -283,11 +287,11 @@ namespace ChessAI {
                 if (piece == this) {
                     args.state.Remove(position);
                 }
-                else if (white && !piece.white && piece.type == Game.PAWN) {
-                    args.state.Remove(new Position((byte)(Row - 1), Column));
+                else if (IsWhite && !piece.IsWhite && piece.type == Game.PAWN) {
+                    args.state.Remove(new Position((byte)(position.Row - 1), position.Column));
                 }
-                else if (!white && piece.white && piece.type == Game.PAWN) {
-                    args.state.Remove(new Position((byte)(Row + 1), Column));
+                else if (!IsWhite && piece.IsWhite && piece.type == Game.PAWN) {
+                    args.state.Remove(new Position((byte)(position.Row + 1), position.Column));
                 }
             }
         }
@@ -295,9 +299,9 @@ namespace ChessAI {
 
 
     class Knight : Piece {
-        public override byte type => Game.KNIGHT;  //Setting the type property of all knights to KNIGHT
+        public override byte type { get => Game.KNIGHT; } //Setting the type property of all knights to KNIGHT
         //I should explain what these keywords do:
-        //override tells the compiler that I want to override the implementation of the same variable from the base class
+        //new tells the compiler that I want to override the implementation of the same variable from the base class
         //public means the variable can be accessed by code from outside this class
         //static means this is the same for all instances of Knight
         //And int, predictably, means integer
@@ -305,212 +309,86 @@ namespace ChessAI {
         public Knight(Position startPosition, bool isWhite) //I don't think its necessary to explain these over and over again since they're the same for most of the pieces, so I'll just explain the differences
         {
             position = startPosition;
-            white = isWhite;
+            IsWhite = isWhite;
         }
 
         public override List<Position> Moves(GameState board) {
             List<Position> output = new List<Position>();
-            //Declare and instantiate new list called output
-            for (int column = Column - 2; column <= Column + 2; column += 1) {
-                for (int row = Row - 2; row <= Row + 2; row += 1) {
-                    if ((row != Row) && (column != Column) && ((Math.Abs(Row - row) + Math.Abs(Column - column)) == 3)) {
-                        Piece target;
-                        if (board.state.TryGetValue(new Position((byte)row, (byte)column), out target) == false) {
-                            output.Add(new Position((byte)row, (byte)column));
-                        }
-                        else if (target.CanCapture(this)) {
-                            output.Add(new Position((byte)row, (byte)column));
-                        }
-
+            
+            foreach (int offSet in Game.knightMoves) {
+                int move = position + offSet;
+                if (0 <= move && move < 64) {
+                    if (CanMoveTo(move, board)) {
+                        output.Add(move);
                     }
                 }
             }
-
-
-
             return output;
         }
     }
 
     class Bishop : Piece {
-        public override byte type => Game.BISHOP;
+        public override byte type { get => Game.BISHOP; }
 
         public Bishop(Position startPosition, bool isWhite) {
             position = startPosition;
-            white = isWhite;
+            IsWhite = isWhite;
         }
 
         public override List<Position> Moves(GameState board) {
-
-            List<Position> output = new List<Position>();
-
-            for (byte i = 1; i <= 7; i++) {
-                Position move = new Position((byte)(Row + i), (byte)(Column + i));
-                Piece tile;
-                if (board.state.TryGetValue(move, out tile)) {
-                    if (tile.CanCapture(this)) {
-                        output.Add(move);
-                    }
-                    if (tile.type != Game.PASSANT) {
-                        break;
-                    }
-                }
-                output.Add(move);
-            }
-
-            for (byte i = 1; i <= 7; i++) {
-                Position move = new Position((byte)(Row - i), (byte)(Column + i));
-                Piece tile;
-                if (board.state.TryGetValue(move, out tile)) {
-                    if (tile.CanCapture(this)) {
-                        output.Add(move);
-                    }
-                    if (tile.type != Game.PASSANT) {
-                        break;
-                    }
-                }
-                output.Add(move);
-            }
-
-            for (byte i = 1; i <= 7; i++) {
-                Position move = new Position((byte)(Row + i), (byte)(Column - i));
-                Piece tile;
-                if (board.state.TryGetValue(move, out tile)) {
-                    if (tile.CanCapture(this)) {
-                        output.Add(move);
-                    }
-                    if (tile.type != Game.PASSANT) {
-                        break;
-                    }
-                }
-                output.Add(move);
-            }
-
-            for (byte i = 1; i <= 7; i++) {
-                Position move = new Position((byte)(Row - i), (byte)(Column - i));
-                Piece tile; //Declare a piece that will hold the piece at the target space if there is a piece there
-                if (board.state.TryGetValue(move, out tile)) { //If there is a piece at tge target location
-                    if (tile.CanCapture(this)) { //If this piece can capture the piece at the target location
-                        output.Add(move); //Add that move to the list
-                    }
-                    if (tile.type != Game.PASSANT) { //If the piece at the target location is not a virtual "En Passant" piece
-                        break; //Stop looking further in that direction
-                    }
-                }
-                output.Add(move); //Add the move at the target position to the list
-            }
-
-            return output;
+            return Game.SlideMoves(board, Game.diagonals, this);
         }
     }
 
     class Rook : Piece {
-        public override byte type => Game.ROOK;
-        public bool canCastle; //Since the rook needs to keep track of whether or not it has moved on account of being involved in castling, it get a bool called canCastle for that purpose
-        //Confusingly, overriding properties from the base class requires the new keyword or the compiler complains (though it does actually still work), but creating new properties does not
-        //require the new keyword
+        public override byte type { get => Game.ROOK; }
 
-        public Rook(Position startPosition, bool isWhite, bool castle = true) //Much like python, default inputs for a function can be set by setting the variable in the function definition
-        {
+        public Rook(Position startPosition, bool isWhite, bool canCastle = true) {
             position = startPosition;
-            white = isWhite;
-            canCastle = castle; //Also copying the castle value
+            IsWhite = isWhite;
+            hasMoved = !canCastle;
         }
 
         public override List<Position> Moves(GameState board) {
-
-            List<Position> output = new List<Position>();
-            for (byte column = (byte)(Column + 1); column <= 7; column++) {
-                Position move = new Position(Row, column);
-                Piece tile;
-                if (board.state.TryGetValue(move, out tile)) {
-                    if (tile.CanCapture(this)) {
-                        output.Add(move);
-                    }
-                    if (tile.type != Game.PASSANT) {
-                        break;
-                    }
-                }
-                output.Add(move);
-            }
-
-            for (byte column = (byte)(Column - 1); column != 255; column--) {
-                Position move = new Position(Row, column);
-                Piece tile;
-                if (board.state.TryGetValue(move, out tile)) {
-                    if (tile.CanCapture(this)) {
-                        output.Add(move);
-                    }
-                    if (tile.type != Game.PASSANT) {
-                        break;
-                    }
-                }
-                output.Add(move);
-            }
-
-            for (byte row = (byte)(Row + 1); row <= 7; row++) {
-                Position move = new Position(row, Column);
-                Piece tile;
-                if (board.state.TryGetValue(move, out tile)) {
-                    if (tile.CanCapture(this)) {
-                        output.Add(move);
-                    }
-                    if (tile.type != Game.PASSANT) {
-                        break;
-                    }
-                }
-                output.Add(move);
-            }
-
-            for (byte row = (byte)(Row - 1); row != 255; row--) {
-                Position move = new Position(row, Column);
-                Piece tile;
-                if (board.state.TryGetValue(move, out tile)) {
-                    if (tile.CanCapture(this)) {
-                        output.Add(move);
-                    }
-                    if (tile.type != Game.PASSANT) {
-                        break;
-                    }
-
-                }
-                output.Add(move);
-            }
-            return output;
-        }
-
-        public override int GetHashCode() {
-            return ((position.Row * 8) + position.Column) + (RenderID * 64) + (Convert.ToInt32(canCastle) * 1024);
-        }
-
-        public override void Moved(Position move, GameState board) {
-            base.Moved(move, board);
-            canCastle = false;
+            return Game.SlideMoves(board, Game.adjacents, this);
         }
     }
 
     class Queen : Piece {
-        public override byte type => Game.QUEEN;
+        public override byte type { get => Game.QUEEN; }
 
         public Queen(Position startPosition, bool isWhite) {
             position = startPosition;
-            white = isWhite;
+            IsWhite = isWhite;
+        }
+
+        public override List<Position> Moves(GameState board) {
+            return Game.SlideMoves(board, Game.adjacents, this);
+        }
+    }
+
+    class King : Piece {
+        public override byte type { get => Game.KING; }
+
+        public King(Position startPosition, bool isWhite, bool canCastle = true) {
+            position = startPosition;
+            IsWhite = isWhite;
+            hasMoved = !canCastle;
         }
 
         public override List<Position> Moves(GameState board) {
             List<Position> output = new List<Position>();
-            Bishop bishop = new Bishop(position, white);
-            Rook rook = new Rook(position, white);
-            output.AddRange(bishop.Moves(board));
-            output.AddRange(rook.Moves(board));
-            //Simply add together the moves of a bishop and the moves of a rook in the queen's position
-
+            foreach (int adjacent in Game.adjacents) {
+                if (CanMoveTo(position + adjacent, board)) {
+                    output.Add(position + adjacent);
+                }
+            }
 
             return output;
         }
-    }
 
-    class King {
-
+        public override bool CanMoveTo(Position position, GameState board) {
+            return base.CanMoveTo(position, board) && !board.Threatened(position, IsWhite);
+        }
     }
 }

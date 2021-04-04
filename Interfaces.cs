@@ -69,8 +69,8 @@ namespace ChessAI {
             state = new Dictionary<Position, Piece>();
             //Initialize state
             for (byte column = 0; column < 8; column++) {
-                Position BlackSpot = new Position(1, column);
-                Position WhiteSpot = new Position(6, column);
+                Position BlackSpot = new Position((byte)1, column);
+                Position WhiteSpot = new Position((byte)6, column);
                 state.Add(WhiteSpot, new Pawn(WhiteSpot, Game.WHITE));
                 state.Add(BlackSpot, new Pawn(BlackSpot, Game.BLACK));
 
@@ -133,7 +133,7 @@ namespace ChessAI {
 
         public bool Threatened(Position position, bool white) {
             foreach (Piece piece in state.Values) {
-                if (piece.white != white) {
+                if (piece.IsWhite != white) {
                     if (piece.Threaten(this).Contains(position)) {
                         return true;
                     }
