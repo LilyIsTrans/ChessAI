@@ -20,15 +20,12 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 
-namespace ChessAI
-{
-    public class RenderTranslator
-    {
+namespace ChessAI {
+    public class RenderTranslator {
         internal Dictionary<byte, CanvasSvgDocument> map = new Dictionary<byte, CanvasSvgDocument>(); //Define a dictionary which maps bytes to Svg documents named map which can only be directly accessed through instances of this class
         public RenderTranslator(
-            CanvasSvgDocument PawnBlack, CanvasSvgDocument PawnWhite, CanvasSvgDocument KnightBlack, CanvasSvgDocument KnightWhite, CanvasSvgDocument BishopBlack, CanvasSvgDocument BishopWhite, CanvasSvgDocument RookBlack, CanvasSvgDocument RookWhite, CanvasSvgDocument QueenBlack, CanvasSvgDocument QueenWhite, CanvasSvgDocument KingBlack, CanvasSvgDocument KingWhite, CanvasSvgDocument PlaceholderBlack, CanvasSvgDocument PlaceholderWhite)
-        {
-            
+            CanvasSvgDocument PawnBlack, CanvasSvgDocument PawnWhite, CanvasSvgDocument KnightBlack, CanvasSvgDocument KnightWhite, CanvasSvgDocument BishopBlack, CanvasSvgDocument BishopWhite, CanvasSvgDocument RookBlack, CanvasSvgDocument RookWhite, CanvasSvgDocument QueenBlack, CanvasSvgDocument QueenWhite, CanvasSvgDocument KingBlack, CanvasSvgDocument KingWhite, CanvasSvgDocument PlaceholderBlack, CanvasSvgDocument PlaceholderWhite) {
+
 
             map.Add(0b0001, PawnBlack); //Map the RenderID of any given piece to the corresponding SVG object.
             map.Add(0b1001, PawnWhite); //The way the encoding works is simple; it is the type of the piece, with 16 added if the piece is white.
@@ -50,8 +47,9 @@ namespace ChessAI
     public class GameState //Temporarily putting this here while it is a dummy object for testing the other systems, will later be moved to it's own file
     {
         public Dictionary<Position, Piece> state;
-        public List<Tuple<Position, byte>> RenderInterface()
-        {
+        private Piece lastCapturedPiece;
+        private Position[] lastMadeMove = new Position[2];
+        public List<Tuple<Position, byte>> RenderInterface() {
             //Later, code will go here that will find all of the pieces and their locations, then return a list of tuples of all of the positions with a piece and the RenderID of that piece.
             //For now, it just returns a hard coded list of tuples for testing the renderer
             List<Tuple<Position, byte>> pieces = new List<Tuple<Position, byte>>(state.Count);
@@ -118,17 +116,12 @@ namespace ChessAI
             else {
 
                 if (Moves.Contains(position)) {
-                    Piece piece = state[selected]; //Get a reference to the piece being moved before removing it from the dictionary so it isn't destroyed
-                    state.Remove(selected); //Remove the piece being moved from its current board position
-                    state.Remove(position); //Capture any pieces at the location the piece is moving to (it is the piece's job to not add positions they cannot capture such as allies to the move list)
-                    state.Add(position, piece); //Add the piece back to the board in its new position
-                    OnTurnCompleted(EventArgs.Empty); //Raise the TurnCompleted event, so that any logic that needs to happen at the end of a turn can do so
-                    piece.Moved(position, this); //Tell the piece that it moved and where
+                    MakeMove(selected, position);
                 }
 
                 Moves = new List<Position>(); //Reset moves to nothing
             }
-            
+
         }
 
         public event EventHandler<GameState> TurnCompleted; //Declare an event called TurnCompleted
@@ -149,8 +142,31 @@ namespace ChessAI
             return false;
         }
 
+        public void MakeMove(Position startPosition, Position endPosition) {
+            lastCapturedPiece = null;
+            Piece piece = state[startPosition]; //Get a reference to the piece being moved before removing it from the dictionary so it isn't destroyed
+            state.Remove(startPosition); //Remove the piece being moved from its current board position
+            if (state.TryGetValue(endPosition, out lastCapturedPiece)) 
+            {
+                state.Remove(endPosition); //Capture any pieces at the location the piece is moving to (it is the piece's job to not add positions they cannot capture such as allies to the move list)
+            }
+            state.Add(endPosition, piece); //Add the piece back to the board in its new position
+            OnTurnCompleted(EventArgs.Empty); //Raise the TurnCompleted event, so that any logic that needs to happen at the end of a turn can do so
+            piece.Moved(endPosition, this); //Tell the piece that it moved and where
+            lastMadeMove[0] = startPosition; //Save the last made move
+            lastMadeMove[1] = endPosition; //Save the last made move
+        }
 
-
+        public void UnMakeMove() {
+            Piece temp = null; //Set to a null reference or the compiler has issues with using it in the second if statement even though it will always be initialized if that if staement runs
+            if (lastCapturedPiece != null) { //If a piece was captured last move
+                temp = lastCapturedPiece;
+            }
+            MakeMove(lastMadeMove[1], lastMadeMove[0]); //Make the inverse of the last move (this will sometimes make an invalid move like moving a pawn backwards, but that's fine because MakeMove doesn't check for that)
+            if (lastCapturedPiece != null) { //If a piece was captured last move
+                state.Add(temp.position, temp);
+            }
+        }
 
     }
 
@@ -167,10 +183,16 @@ namespace ChessAI
             byte row = (byte)(rawPoint.Position.Y / pieceSize.Width);
             byte column = (byte)(rawPoint.Position.X / pieceSize.Height);
             game.Select(new Position(row, column));
-            
-            
-            
+
+
+
             canvas.Invalidate(); //Indicates that the canvas should be redrawn
+        }
+
+        public void OnCtrlZInvoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args) {
+            game.UnMakeMove();
+
+            canvas.Invalidate();
         }
     }
 }
