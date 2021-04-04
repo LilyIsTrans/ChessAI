@@ -510,50 +510,7 @@ namespace ChessAI {
         }
     }
 
-    class King : Piece {
-        public override byte type => Game.KING;
-        public bool canCastle; //The king also needs to keep track of its eligibility to castle
-        //The king pieces do not directly worry about check and checkmate, that's the game state's job
+    class King {
 
-        public King(Position startPosition, bool isWhite, bool castle = true) {
-            position = startPosition;
-            white = isWhite;
-            canCastle = castle;
-        }
-
-        public override List<Position> Moves(GameState board) {
-            List<Position> output = new List<Position>();
-            for (byte column = (byte)(Column - 1); column <= Column + 1; column++) { //Loop over all the columns the King could move to
-                for (byte row = (byte)(Row - 1); row <= Row + 1; row++) { //Loop over all the rows the king could move to
-                    Position move = new Position(row, column); //Create a new position at the given target point
-                    if ((row != Row) || (column != Column)) { //Check that the king is not trying to move to the square it is currently occupying
-                        if (!board.Threatened(move, white)) { //Check that the position the king is trying to move to is not threatened for the colour of the king
-                            Piece target; //Create a temporary piece variable to hold the piece at the target position should it exist
-                            if (board.state.TryGetValue(move, out target)) { //If there is a piece at the target position
-                                if (target.CanCapture(this)) { //If the king can capture that piece
-                                    output.Add(move); //Add the move to the output
-                                }
-                            }
-                            else { //If the target position is empty
-                                output.Add(move); // Add the move to the list
-                            }
-                        }
-                    }
-                }
-            }
-
-
-
-            return output;
-        }
-
-        public override int GetHashCode() {
-            return ((position.Row * 8) + position.Column) + (RenderID * 64) + (Convert.ToInt32(canCastle) * 1024);
-        }
-
-        public override void Moved(Position move, GameState board) {
-            base.Moved(move, board);
-            canCastle = false;
-        }
     }
 }
