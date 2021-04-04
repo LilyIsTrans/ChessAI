@@ -379,9 +379,12 @@ namespace ChessAI {
         public override List<Position> Moves(GameState board) {
             List<Position> output = new List<Position>();
             foreach (int adjacent in Game.adjacents) {
-                if (CanMoveTo(position + adjacent, board)) {
-                    output.Add(position + adjacent);
+                try {
+                    if (CanMoveTo(position + adjacent, board)) {
+                        output.Add(position + adjacent);
+                    }
                 }
+                catch (System.ArgumentOutOfRangeException) { }
             }
 
             return output;
