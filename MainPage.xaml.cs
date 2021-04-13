@@ -62,13 +62,19 @@ namespace ChessAI {
             KeyboardAccelerator ctrlZ = new KeyboardAccelerator {
                 Modifiers = Windows.System.VirtualKeyModifiers.Control, Key = Windows.System.VirtualKey.Z
             };
-            
+            KeyboardAccelerator ctrlT = new KeyboardAccelerator {
+                Modifiers = Windows.System.VirtualKeyModifiers.Control,
+                Key = Windows.System.VirtualKey.T
+            };
+
 
 
             canvas.PointerPressed += new PointerEventHandler(input_MouseClicked); //This tells the canvas which event it should raise (function it should call) when it is clicked
 
             ctrlZ.Invoked += new TypedEventHandler<KeyboardAccelerator, KeyboardAcceleratorInvokedEventArgs> (OnCtrlZInvoked);
+            ctrlT.Invoked += new TypedEventHandler<KeyboardAccelerator, KeyboardAcceleratorInvokedEventArgs>(OnCtrlTInvoked);
             canvas.KeyboardAccelerators.Add(ctrlZ);
+            canvas.KeyboardAccelerators.Add(ctrlT);
             
 
         }

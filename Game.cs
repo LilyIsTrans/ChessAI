@@ -166,7 +166,12 @@ namespace ChessAI {
 
         }
 
-
+        public static bool GetBit(this byte self, byte index) {
+            return (self & (1 << index)) == 1;
+        }
+        public static bool GetBit(this int self, byte index) {
+            return (self & (1 << index)) == 1;
+        }
 
     }
 
@@ -225,7 +230,7 @@ namespace ChessAI {
             if (!board.state.ContainsKey(position + rowDifference)) { //If there is no piece directly in front of the pawn
                 output.Add(position + rowDifference); //Add the move directly in front of the pawn to the output list
             }
-            for (int i = position.Column == 0 ? 1 : -1; i <= (position.Column == 7 ? -1 : 1); i++) { //Loop through the possible column offsets using inline conditionals to filter out nonexistant columns
+            for (int i = position.Column == 0 ? 1 : -1; i <= (position.Column == 7 ? -1 : 1); i += 2) { //Loop through the possible column offsets using inline conditionals to filter out nonexistant columns
                 Piece target;
                 if (board.state.TryGetValue(position + rowDifference + i, out target)) { //Check if the position has a piece at that location and if so what it is
                     if (CanCapture(target)) {
@@ -244,21 +249,23 @@ namespace ChessAI {
             
             List<Position> output = new List<Position>();
             for (int i = position.Column == 0 ? 1 : -1; i <= (position.Column == 7 ? -1 : 1); i++) { //Loop through the possible column offsets using inline conditionals to filter out nonexistant columns
-                Piece target;
-                if (board.state.TryGetValue(position + rowDifference + i, out target)) { //Check if the position has a piece at that location and if so what it is
-                    if (CanCapture(target))
-                    output.Add(position + rowDifference + i);
-                }
+                output.Add(position + rowDifference + i);
             }
             return output;
         }
 
         public override void Moved(Position move, GameState board) {
+            hasMoved = true;
             if (Math.Abs(move - position) == 16) {
                 int rowOffset = IsWhite ? -8 : 8;
-                board.state.Add(position + rowOffset, new EnPassantPlaceholder(position + rowOffset, IsWhite, board));
+                if (move - position == 2 * rowOffset) {
+                    board.state.Add(position + rowOffset, new EnPassantPlaceholder(position + rowOffset, IsWhite, board));
+                }
+                else if (move - position == -2 * rowOffset) {
+                    hasMoved = false;
+                }
             }
-            base.Moved(move, board);
+            position = move;
         }
 
         public Pawn(Position startPosition, bool isWhite) {
@@ -271,6 +278,10 @@ namespace ChessAI {
         public override byte type => Game.PASSANT;
         public override List<Position> Moves(GameState board) {
             return new List<Position>(); //Return an empty list, the placeholder can't move anywhere
+        }
+
+        public override List<Position> Threaten(GameState board) {
+            return new List<Position>();
         }
 
         public override bool CanBeCaptured(Piece other) {
@@ -315,6 +326,10 @@ namespace ChessAI {
             IsWhite = isWhite;
         }
 
+        public override bool CanMoveTo(Position position, GameState board) {
+            return base.CanMoveTo(position, board) && ((position.Row.GetBit(0) == position.Column.GetBit(0)) != (this.position.Row.GetBit(0) == this.position.Column.GetBit(0)));
+        }
+
         public override List<Position> Moves(GameState board) {
             List<Position> output = new List<Position>();
             
@@ -339,7 +354,7 @@ namespace ChessAI {
         }
 
         public override bool CanMoveTo(Position position, GameState board) {
-            return base.CanMoveTo(position, board);// && (position.Row.Get == position.Column[0]);
+            return base.CanMoveTo(position, board) && ((position.Row.GetBit(0) == position.Column.GetBit(0)) == (this.position.Row.GetBit(0) == this.position.Column.GetBit(0)));
         }
 
         public override List<Position> Moves(GameState board) {
@@ -356,21 +371,36 @@ namespace ChessAI {
             hasMoved = !canCastle;
         }
 
+        public override bool CanMoveTo(Position position, GameState board) {
+            return base.CanMoveTo(position, board) && ((position.Row == this.position.Row) != (position.Column == this.position.Column));
+        }
+
         public override List<Position> Moves(GameState board) {
-            return Game.SlideMoves(board, Game.adjacents, this);
+            return Game.SlideMoves(board, Game.laterals, this);
         }
     }
 
     class Queen : Piece {
         public override byte type { get => Game.QUEEN; }
+        private bool moveMode = false;
 
         public Queen(Position startPosition, bool isWhite) {
             position = startPosition;
             IsWhite = isWhite;
         }
 
+        public override bool CanMoveTo(Position position, GameState board) {
+            bool bishopCould = ((position.Row.GetBit(0) == position.Column.GetBit(0)) == (this.position.Row.GetBit(0) == this.position.Column.GetBit(0)));
+            bool rookCould = ((position.Row == this.position.Row) != (position.Column == this.position.Column));
+            return base.CanMoveTo(position, board) && (moveMode ? bishopCould : rookCould);
+        }
+
         public override List<Position> Moves(GameState board) {
-            return Game.SlideMoves(board, Game.adjacents, this);
+            List<Position> output = Game.SlideMoves(board, Game.laterals, this);
+            moveMode = true;
+            output.AddRange(Game.SlideMoves(board, Game.diagonals, this));
+            moveMode = false;
+            return output;
         }
     }
 
@@ -398,7 +428,7 @@ namespace ChessAI {
         }
 
         public override bool CanMoveTo(Position position, GameState board) {
-            return base.CanMoveTo(position, board) && !board.Threatened(position, IsWhite);
+            return base.CanMoveTo(position, board) && !board.Threatened(position, IsWhite, this);
         }
     }
 }

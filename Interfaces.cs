@@ -131,15 +131,24 @@ namespace ChessAI {
             handler?.Invoke(this, this); //Invoke the event (cause all subscribers to the event to handle the event)
         }
 
-        public bool Threatened(Position position, bool white) {
-            foreach (Piece piece in state.Values) {
-                if (piece.IsWhite != white) {
-                    if (piece.Threaten(this).Contains(position)) {
-                        return true;
-                    }
-                }
-            }
-            return false;
+        public virtual void OnForcedTurn(EventArgs args) {
+            EventHandler<GameState> handler = TurnCompleted; //Set the event method to be for the TurnCompleted event
+            handler?.Invoke(this, this); //Invoke the event (cause all subscribers to the event to handle the event)
+        }
+
+
+        public bool Threatened(Position position, bool white, Piece mover) {
+            state.Remove(mover.position);
+            Queen virtualQueen = new Queen(position, white);
+            Knight virtualKnight = new Knight(position, white);
+            List<Position> candidates = new List<Position>(virtualQueen.Threaten(this));
+            candidates.AddRange(virtualKnight.Threaten(this));
+            
+            IEnumerable<Position> Pieces = candidates.Intersect<Position>(state.Keys);
+            
+            Pieces = Pieces.Where((Position n) => (state[n].IsWhite != white) && state[n].Threaten(this).Contains(position));
+            state.Add(mover.position, mover);
+            return Pieces.Count() != 0;
         }
 
         public void MakeMove(Position startPosition, Position endPosition) {
@@ -192,6 +201,10 @@ namespace ChessAI {
         public void OnCtrlZInvoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args) {
             game.UnMakeMove();
 
+            canvas.Invalidate();
+        }
+        public void OnCtrlTInvoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args) {
+            game.OnForcedTurn(EventArgs.Empty);
             canvas.Invalidate();
         }
     }
