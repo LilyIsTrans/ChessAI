@@ -241,9 +241,12 @@ namespace ChessAI {
 
         public override List<Position> Threaten(GameState board) {
             int rowDifference = IsWhite ? -8 : 8; //Set rowDifference to -8 if IsWhite, 8 otherwise
+            
             List<Position> output = new List<Position>();
             for (int i = position.Column == 0 ? 1 : -1; i <= (position.Column == 7 ? -1 : 1); i++) { //Loop through the possible column offsets using inline conditionals to filter out nonexistant columns
-                if (board.state.ContainsKey(position + rowDifference + i)) { //Check if the position has a piece at that location and if so what it is
+                Piece target;
+                if (board.state.TryGetValue(position + rowDifference + i, out target)) { //Check if the position has a piece at that location and if so what it is
+                    if (CanCapture(target))
                     output.Add(position + rowDifference + i);
                 }
             }
@@ -251,8 +254,8 @@ namespace ChessAI {
         }
 
         public override void Moved(Position move, GameState board) {
-            if (Math.Abs(move - position) == 2) {
-                int rowOffset = IsWhite ? -1 : 1;
+            if (Math.Abs(move - position) == 16) {
+                int rowOffset = IsWhite ? -8 : 8;
                 board.state.Add(position + rowOffset, new EnPassantPlaceholder(position + rowOffset, IsWhite, board));
             }
             base.Moved(move, board);
@@ -271,7 +274,7 @@ namespace ChessAI {
         }
 
         public override bool CanBeCaptured(Piece other) {
-            return true;
+            return (other.IsWhite != IsWhite) || (other.type != Game.PAWN);
         }
 
         public EnPassantPlaceholder(Position Position, bool isWhite, GameState game) {
@@ -333,6 +336,10 @@ namespace ChessAI {
         public Bishop(Position startPosition, bool isWhite) {
             position = startPosition;
             IsWhite = isWhite;
+        }
+
+        public override bool CanMoveTo(Position position, GameState board) {
+            return base.CanMoveTo(position, board);// && (position.Row.Get == position.Column[0]);
         }
 
         public override List<Position> Moves(GameState board) {
