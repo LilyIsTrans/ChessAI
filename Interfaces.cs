@@ -151,6 +151,20 @@ namespace ChessAI {
             return Pieces.Count() != 0;
         }
 
+        public bool KingThreatenedAfter(Position position, bool white, Piece mover, Position king) {
+            Piece target;
+            bool removed = state.Remove(position, out target);
+            bool output = Threatened(king, white, mover);
+
+
+
+            if (removed) {
+                state.Add(position, target);
+            }
+            return output;
+            
+        }
+
         public void MakeMove(Position startPosition, Position endPosition) {
             lastCapturedPiece = null;
             Piece piece = state[startPosition]; //Get a reference to the piece being moved before removing it from the dictionary so it isn't destroyed
@@ -175,6 +189,13 @@ namespace ChessAI {
             if (lastCapturedPiece != null) { //If a piece was captured last move
                 state.Add(temp.position, temp);
             }
+            OnUndo(EventArgs.Empty);
+        }
+
+        public event EventHandler<GameState> Undo;
+        protected virtual void OnUndo(EventArgs args) { //Create a new event method for TurnCompleted
+            EventHandler<GameState> handler = Undo; //Set the event method to be for the TurnCompleted event
+            handler?.Invoke(this, this); //Invoke the event (cause all subscribers to the event to handle the event)
         }
 
     }

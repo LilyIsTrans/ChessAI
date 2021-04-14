@@ -56,8 +56,8 @@ namespace ChessAI {
         }
         public byte Column //Define property named Column. Identical to Row except that it's the columns.
         {
-            get => (byte)(index - ((index >> 3) << 3));
-            //Return index bit shifted right 3 subtracted from the index, which will get just the last 3 bits representing the column
+            get => (byte)(index & 0b00000111);
+            //Return the last three bits of the index using bitwise and comparions. I have since learned that the number I'm anding with is called the mask, but it just seemed like a good way to retrieve the last three bits to me
             set {
                 if ((0 <= value) && (value < 8)) {
                     index = (byte)(Row + value);
@@ -173,6 +173,13 @@ namespace ChessAI {
             return (self & (1 << index)) == 1;
         }
 
+        public static byte BitSum(this byte self) {
+            byte count; // c accumulates the total bits set in v
+            for (count = 0; self != 0; count++) {
+                self = (byte)(self & (self - 1)); // clear the least significant bit set
+            }
+            return count;
+        }
     }
 
     public abstract class Piece {
@@ -276,6 +283,7 @@ namespace ChessAI {
 
     class EnPassantPlaceholder : Piece {
         public override byte type => Game.PASSANT;
+        private bool extant = true;
         public override List<Position> Moves(GameState board) {
             return new List<Position>(); //Return an empty list, the placeholder can't move anywhere
         }
@@ -296,17 +304,36 @@ namespace ChessAI {
         }
 
         void placeholder_TurnCompleted(object sender, GameState args) {
-            Piece piece;
-            if (args.state.TryGetValue(position, out piece)) {
-                if (piece == this) {
-                    args.state.Remove(position);
+            if (extant)
+            {
+                Piece piece;
+                if (args.state.TryGetValue(position, out piece)) {
+                    if (piece == this) {
+                        args.state.Remove(position);
+                    }
+                    else if (IsWhite && !piece.IsWhite && piece.type == Game.PAWN) {
+                        args.state.Remove(new Position((byte)(position.Row - 1), position.Column));
+                    }
+                    else if (!IsWhite && piece.IsWhite && piece.type == Game.PAWN) {
+                        args.state.Remove(new Position((byte)(position.Row + 1), position.Column));
+                    }
                 }
-                else if (IsWhite && !piece.IsWhite && piece.type == Game.PAWN) {
-                    args.state.Remove(new Position((byte)(position.Row - 1), position.Column));
-                }
-                else if (!IsWhite && piece.IsWhite && piece.type == Game.PAWN) {
-                    args.state.Remove(new Position((byte)(position.Row + 1), position.Column));
-                }
+                extant = false;
+                args.TurnCompleted -= placeholder_TurnCompleted;
+                args.Undo += placeholder_Undo;
+            }
+            else {
+                args.Undo -= placeholder_Undo;
+            }
+
+        }
+
+        void placeholder_Undo(object sender, GameState args) {
+            if (!extant) {
+                extant = true;
+                args.state.Add(position, this);
+                args.Undo -= placeholder_Undo;
+                args.TurnCompleted += placeholder_TurnCompleted;
             }
         }
     }
@@ -428,7 +455,15 @@ namespace ChessAI {
         }
 
         public override bool CanMoveTo(Position position, GameState board) {
-            return base.CanMoveTo(position, board) && !board.Threatened(position, IsWhite, this);
+            return base.CanMoveTo(position, board) && !((((this.position & 0b111) == 0) && ((position & 0b111) == 7)) || (((this.position & 0b111) == 7) && ((position & 0b111) == 0))) && !board.Threatened(position, IsWhite, this);
+        }
+
+        public override List<Position> Threaten(GameState board) {
+            List<Position> output = new List<Position>();
+            foreach (int adjacent in Game.adjacents) {
+                    output.Add(position + adjacent);
+            }
+            return output;
         }
     }
 }
